@@ -58,8 +58,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProject(id: string): Promise<boolean> {
-    const result = await db.delete(projects).where(eq(projects.id, id));
-    return (result.rowCount ?? 0) > 0;
+    const result = await db.delete(projects).where(eq(projects.id, id)).returning({ id: projects.id });
+    return result.length > 0;
   }
 
   // Prompt comparison methods
@@ -101,8 +101,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deletePromptComparison(id: string): Promise<boolean> {
-    const result = await db.delete(promptComparisons).where(eq(promptComparisons.id, id));
-    return (result.rowCount ?? 0) > 0;
+    const result = await db.delete(promptComparisons).where(eq(promptComparisons.id, id)).returning({ id: promptComparisons.id });
+    return result.length > 0;
   }
 }
 
