@@ -2,8 +2,11 @@ import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import PromptPanel from "@/components/prompt-panel";
 import ComparisonTools from "@/components/comparison-tools";
+import ThemeSelector from "@/components/theme-selector";
+import { useTheme } from "@/contexts/theme-context";
 
 export default function PromptComparison() {
+  const { themeDefinition } = useTheme();
   const [promptA, setPromptA] = useState("");
   const [promptB, setPromptB] = useState("");
   const [showPreviewA, setShowPreviewA] = useState(false);
@@ -56,8 +59,8 @@ export default function PromptComparison() {
     const setA = new Set(wordsA);
     const setB = new Set(wordsB);
     
-    const intersection = new Set([...setA].filter(x => setB.has(x)));
-    const union = new Set([...setA, ...setB]);
+    const intersection = new Set(Array.from(setA).filter(x => setB.has(x)));
+    const union = new Set([...Array.from(setA), ...Array.from(setB)]);
     
     return Math.round((intersection.size / union.size) * 100);
   }, [promptA, promptB]);
@@ -84,16 +87,36 @@ export default function PromptComparison() {
   }, [promptA, promptB, statsA, statsB, similarity]);
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div 
+      className="min-h-screen"
+      style={{ backgroundColor: themeDefinition.colors.backgroundSecondary }}
+    >
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-slate-200">
+      <header 
+        className="shadow-sm border-b"
+        style={{ 
+          backgroundColor: themeDefinition.colors.background,
+          borderColor: themeDefinition.colors.border
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-slate-900">Comparador de Prompts</h1>
-              <p className="text-sm text-slate-600 mt-1">Compare e analise dois prompts lado a lado com suporte a Markdown e XML</p>
+              <h1 
+                className="text-2xl font-semibold"
+                style={{ color: themeDefinition.colors.foreground }}
+              >
+                Comparador de Prompts
+              </h1>
+              <p 
+                className="text-sm mt-1"
+                style={{ color: themeDefinition.colors.foregroundMuted }}
+              >
+                Compare e analise dois prompts lado a lado com suporte a Markdown e XML
+              </p>
             </div>
             <div className="flex items-center space-x-3">
+              <ThemeSelector />
               <Button 
                 variant="outline" 
                 onClick={clearAll}

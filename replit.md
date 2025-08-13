@@ -1,6 +1,6 @@
 # Overview
 
-This is a prompt comparison tool built with React and Express.js that allows users to compare two text prompts side by side. The application features a modern UI built with shadcn/ui components and Tailwind CSS, providing functionality to input, edit, and analyze differences between prompt texts. The system includes real-time statistics tracking (word count, character count, line count) and comparison tools for highlighting differences and calculating similarity scores.
+This is a prompt comparison tool built with React and Express.js that allows users to compare two text prompts side by side. The application features a modern UI built with shadcn/ui components and Tailwind CSS, providing functionality to input, edit, and analyze differences between prompt texts. The system includes real-time statistics tracking (word count, character count, line count), comparison tools for highlighting differences and calculating similarity scores, and a comprehensive theming system inspired by popular VSCode themes including One Dark Pro, GitHub Light/Dark, Dracula, Monokai, Atom One Light, Nord, Solarized, Material Theme, and high-contrast options.
 
 # User Preferences
 
@@ -32,9 +32,12 @@ Preferred communication style: Simple, everyday language.
 ## Component Structure
 - **Layout**: Responsive design with resizable panels for side-by-side comparison
 - **Core Components**: 
-  - PromptPanel: Text input/preview with markdown support
-  - ComparisonTools: Statistics display and comparison utilities
+  - PromptPanel: Text input/preview with markdown support and theme-aware syntax highlighting
+  - ComparisonTools: Statistics display and comparison utilities with theme integration
+  - ThemeSelector: Dropdown selector for switching between VSCode-inspired themes
+  - SyntaxHighlighter: Custom markdown renderer with syntax highlighting for multiple languages
 - **UI Components**: Comprehensive shadcn/ui component library including forms, dialogs, tooltips, and data display components
+- **Theming System**: Context-based theme provider with 12 predefined themes supporting syntax highlighting for Markdown, HTML, CSS, Python, and JavaScript
 
 ## Development Tools
 - **Build System**: Vite with React plugin and TypeScript support

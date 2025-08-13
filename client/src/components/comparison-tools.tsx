@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useTheme } from "@/contexts/theme-context";
 
 interface ComparisonToolsProps {
   statsA: { chars: number; words: number; lines: number };
@@ -8,6 +9,7 @@ interface ComparisonToolsProps {
 }
 
 export default function ComparisonTools({ statsA, statsB, similarity }: ComparisonToolsProps) {
+  const { themeDefinition } = useTheme();
   const [differencesHighlighted, setDifferencesHighlighted] = useState(false);
   const [syncScrollEnabled, setSyncScrollEnabled] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
@@ -27,10 +29,21 @@ export default function ComparisonTools({ statsA, statsB, similarity }: Comparis
   };
 
   return (
-    <div className="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <div 
+      className="mt-6 rounded-xl shadow-sm border p-4"
+      style={{
+        backgroundColor: themeDefinition.colors.background,
+        borderColor: themeDefinition.colors.border
+      }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h3 className="text-sm font-medium text-slate-900">Ferramentas de Comparação</h3>
+          <h3 
+            className="text-sm font-medium"
+            style={{ color: themeDefinition.colors.foreground }}
+          >
+            Ferramentas de Comparação
+          </h3>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
@@ -74,7 +87,10 @@ export default function ComparisonTools({ statsA, statsB, similarity }: Comparis
           </div>
         </div>
         
-        <div className="flex items-center space-x-4 text-sm text-slate-600">
+        <div 
+          className="flex items-center space-x-4 text-sm"
+          style={{ color: themeDefinition.colors.foregroundMuted }}
+        >
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             <span data-testid="text-stats-a">
@@ -87,42 +103,74 @@ export default function ComparisonTools({ statsA, statsB, similarity }: Comparis
               Prompt B: {statsB.chars} chars, {statsB.lines} linhas
             </span>
           </div>
-          <div className="font-medium" data-testid="text-similarity">
+          <div 
+            className="font-medium" 
+            data-testid="text-similarity"
+            style={{ color: themeDefinition.colors.accent }}
+          >
             Similaridade: {similarity}%
           </div>
         </div>
       </div>
 
       {showStatistics && (
-        <div className="mt-4 pt-4 border-t border-slate-200">
+        <div 
+          className="mt-4 pt-4 border-t"
+          style={{ borderColor: themeDefinition.colors.border }}
+        >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <div className="text-blue-700 font-medium">Prompt A</div>
-              <div className="text-blue-600 mt-1">
+            <div 
+              className="p-3 rounded-lg"
+              style={{ backgroundColor: themeDefinition.colors.backgroundSecondary }}
+            >
+              <div className="text-blue-500 font-medium">Prompt A</div>
+              <div className="mt-1" style={{ color: themeDefinition.colors.foreground }}>
                 <div>Caracteres: {statsA.chars}</div>
                 <div>Palavras: {statsA.words}</div>
                 <div>Linhas: {statsA.lines}</div>
               </div>
             </div>
-            <div className="bg-green-50 p-3 rounded-lg">
-              <div className="text-green-700 font-medium">Prompt B</div>
-              <div className="text-green-600 mt-1">
+            <div 
+              className="p-3 rounded-lg"
+              style={{ backgroundColor: themeDefinition.colors.backgroundSecondary }}
+            >
+              <div className="text-green-500 font-medium">Prompt B</div>
+              <div className="mt-1" style={{ color: themeDefinition.colors.foreground }}>
                 <div>Caracteres: {statsB.chars}</div>
                 <div>Palavras: {statsB.words}</div>
                 <div>Linhas: {statsB.lines}</div>
               </div>
             </div>
-            <div className="bg-slate-50 p-3 rounded-lg">
-              <div className="text-slate-700 font-medium">Diferença</div>
-              <div className="text-slate-600 mt-1">
+            <div 
+              className="p-3 rounded-lg"
+              style={{ backgroundColor: themeDefinition.colors.backgroundSecondary }}
+            >
+              <div 
+                className="font-medium"
+                style={{ color: themeDefinition.colors.foreground }}
+              >
+                Diferença
+              </div>
+              <div className="mt-1" style={{ color: themeDefinition.colors.foregroundMuted }}>
                 <div>Chars: {Math.abs(statsA.chars - statsB.chars)}</div>
                 <div>Palavras: {Math.abs(statsA.words - statsB.words)}</div>
                 <div>Linhas: {Math.abs(statsA.lines - statsB.lines)}</div>
               </div>
             </div>
-            <div className="bg-primary-50 p-3 rounded-lg">
-              <div className="text-primary-700 font-medium">Similaridade</div>
-              <div className="text-primary-600 mt-1 text-lg font-semibold">
+            <div 
+              className="p-3 rounded-lg"
+              style={{ backgroundColor: themeDefinition.colors.backgroundSecondary }}
+            >
+              <div 
+                className="font-medium"
+                style={{ color: themeDefinition.colors.accent }}
+              >
+                Similaridade
+              </div>
+              <div 
+                className="mt-1 text-lg font-semibold"
+                style={{ color: themeDefinition.colors.accent }}
+              >
                 {similarity}%
               </div>
             </div>

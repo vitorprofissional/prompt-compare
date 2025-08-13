@@ -117,19 +117,103 @@
   }
 }
 
-/* Custom scrollbar styling */
+/* Theme-based syntax highlighting */
+.syntax-keyword { color: var(--syntax-keyword); font-weight: 600; }
+.syntax-string { color: var(--syntax-string); }
+.syntax-number { color: var(--syntax-number); }
+.syntax-function { color: var(--syntax-function); font-weight: 500; }
+.syntax-variable { color: var(--syntax-variable); }
+.syntax-comment { color: var(--syntax-comment); font-style: italic; }
+.syntax-operator { color: var(--syntax-operator); }
+.syntax-tag { color: var(--syntax-tag); font-weight: 600; }
+.syntax-attribute { color: var(--syntax-attribute); }
+.syntax-type { color: var(--syntax-type); font-weight: 500; }
+
+/* Editor theming */
+.editor-panel {
+  background-color: var(--editor-bg);
+  color: var(--editor-fg);
+  border-color: var(--editor-border);
+}
+
+.editor-panel .editor-textarea {
+  background-color: var(--editor-bg);
+  color: var(--editor-fg);
+  border: none;
+  outline: none;
+}
+
+.editor-panel .editor-textarea::placeholder {
+  color: var(--editor-fg-muted) !important;
+}
+
+.editor-panel .editor-textarea::-webkit-input-placeholder {
+  color: var(--editor-fg-muted) !important;
+}
+
+.editor-panel .editor-textarea::-moz-placeholder {
+  color: var(--editor-fg-muted) !important;
+}
+
+.editor-panel .editor-textarea:-ms-input-placeholder {
+  color: var(--editor-fg-muted) !important;
+}
+
+.editor-preview {
+  background-color: var(--editor-bg-secondary);
+  border-color: var(--editor-border);
+  color: var(--editor-fg);
+}
+
+.editor-preview::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.editor-preview::-webkit-scrollbar-track {
+  background: var(--editor-bg-tertiary);
+  border-radius: 4px;
+}
+
+.editor-preview::-webkit-scrollbar-thumb {
+  background: var(--editor-border);
+  border-radius: 4px;
+}
+
+.editor-preview::-webkit-scrollbar-thumb:hover {
+  background: var(--editor-accent);
+}
+
+/* Custom scrollbar styling for themed elements */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--editor-bg-secondary, #f1f5f9);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--editor-border, #cbd5e1);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--editor-accent, #94a3b8);
+}
+
+/* Selection highlighting */
+.editor-textarea::selection,
+.editor-preview ::selection {
+  background-color: var(--editor-selection);
+}
+
+/* Line highlighting */
+.editor-line-highlight {
+  background-color: var(--editor-line-highlight);
+}
+
+/* Theme preview colors in dropdown */
+.theme-preview-dot {
+  border: 1px solid var(--border);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
