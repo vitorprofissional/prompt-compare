@@ -8,7 +8,28 @@ import {
 } from "@shared/schema";
 import { storage } from "./storage";
 
+// Ensure demo user exists
+async function ensureDemoUser() {
+  const userId = "demo-user";
+  try {
+    let user = await storage.getUser(userId);
+    if (!user) {
+      // Create demo user with fixed ID
+      await storage.createDemoUser({
+        id: userId,
+        username: "demo",
+        password: "demo"
+      });
+    }
+  } catch (error) {
+    console.log("Demo user setup:", error);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize demo user
+  await ensureDemoUser();
+  
   // Projects API
   app.get("/api/projects", async (req, res) => {
     try {

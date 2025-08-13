@@ -9,6 +9,11 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Inserir usuário demo se não existir
+INSERT INTO users (id, username, password, created_at) 
+VALUES ('demo-user', 'demo', 'demo', NOW())
+ON CONFLICT (id) DO NOTHING;
+
 -- Tabela de projetos
 CREATE TABLE IF NOT EXISTS projects (
   id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
