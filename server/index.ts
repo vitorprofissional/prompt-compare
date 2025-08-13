@@ -10,32 +10,34 @@ app.use(express.json());
 
 // Test database connection
 let dbStatus = "not tested";
-let dbError = null;
+let dbError: string | null = null;
 
 try {
   console.log("🔍 DATABASE_URL exists:", !!process.env.DATABASE_URL);
   console.log("🔍 DATABASE_URL length:", process.env.DATABASE_URL?.length);
   console.log("🔍 DATABASE_URL starts with:", process.env.DATABASE_URL?.substring(0, 20));
   
-  const sql = postgres(process.env.DATABASE_URL, {
+  const sql = postgres(process.env.DATABASE_URL!, {
     ssl: 'require',
     max: 1,
-    connect_timeout: 5,
+    connect_timeout: 10,
+    idle_timeout: 20,
+    max_lifetime: 60,
   });
   
   // Simple test query
   sql`SELECT 1 as test`.then(() => {
     dbStatus = "connected";
     console.log("✅ Database connected successfully");
-  }).catch((error) => {
+  }).catch((error: any) => {
     dbStatus = "error";
-    dbError = error.message;
-    console.error("❌ Database connection failed:", error.message);
+    dbError = error?.message || "Unknown error";
+    console.error("❌ Database connection failed:", error?.message || error);
   });
-} catch (error) {
+} catch (error: any) {
   dbStatus = "error";
-  dbError = error.message;
-  console.error("❌ Database setup failed:", error.message);
+  dbError = error?.message || "Unknown error";
+  console.error("❌ Database setup failed:", error?.message || error);
 }
 
 app.get("/api/test", (req, res) => {
@@ -54,7 +56,7 @@ app.get("/api/projects", async (req, res) => {
   
   if (dbStatus === "connected") {
     try {
-      const sql = postgres(process.env.DATABASE_URL, {
+      const sql = postgres(process.env.DATABASE_URL!, {
         ssl: 'require',
         max: 1,
       });
@@ -94,7 +96,7 @@ app.post("/api/projects", async (req, res) => {
     
     if (dbStatus === "connected") {
       // Try to insert into database
-      const sql = postgres(process.env.DATABASE_URL, {
+      const sql = postgres(process.env.DATABASE_URL!, {
         ssl: 'require',
         max: 1,
       });
