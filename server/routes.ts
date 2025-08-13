@@ -5,7 +5,7 @@ import {
   insertProjectSchema, 
   insertPromptComparisonSchema 
 } from "@shared/schema";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Add logging middleware for API routes
