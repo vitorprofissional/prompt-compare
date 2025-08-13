@@ -71,58 +71,30 @@ app.get("/api/projects", async (req, res) => {
   }
 });
 
-app.post("/api/projects", async (req, res) => {
+// Super simple POST test
+app.post("/api/simple-test", (req, res) => {
+  console.log("🟢 Simple POST test called");
+  res.json({ message: "Simple POST works", body: req.body });
+});
+
+app.post("/api/projects", (req, res) => {
   console.log("📋 Projects POST endpoint called");
-  console.log("📝 Request body:", req.body);
   
-  console.log("🔍 Checking database status:", dbStatus);
-  if (dbStatus !== "connected") {
-    console.log("❌ Database not connected, returning error");
-    return res.status(500).json({ error: "Database not connected", dbStatus, dbError });
-  }
-
   try {
-    console.log("✅ Database is connected, proceeding...");
-    const { name, description } = req.body;
-    console.log("📊 Extracted data:", { name, description });
+    console.log("📝 Request body:", req.body);
     
-    if (!name || name.trim() === '') {
-      console.log("❌ Name validation failed");
-      return res.status(400).json({ error: "Project name is required" });
-    }
-
-    console.log("🔗 Creating postgres connection...");
-    const sql = postgres(process.env.DATABASE_URL, {
-      ssl: 'require',
-      max: 1,
-      connect_timeout: 10,
+    // Just return success without any database operations
+    console.log("✅ Returning mock success");
+    res.status(201).json({ 
+      id: "mock-id", 
+      name: req.body.name || "Mock Project", 
+      description: req.body.description || "Mock Description",
+      created_at: new Date().toISOString()
     });
-    
-    console.log("💾 Creating project with SQL:", { name, description });
-    
-    const [newProject] = await sql`
-      INSERT INTO projects (name, description) 
-      VALUES (${name}, ${description || null})
-      RETURNING *
-    `;
-    
-    console.log("🔐 Closing connection...");
-    await sql.end();
-    
-    console.log("✅ Project created successfully:", newProject);
-    res.status(201).json(newProject);
     
   } catch (error) {
-    console.error("❌ Failed to create project - Error details:");
-    console.error("❌ Error message:", error.message);
-    console.error("❌ Error stack:", error.stack);
-    console.error("❌ Error code:", error.code);
-    res.status(500).json({ 
-      error: "Failed to create project", 
-      details: error.message,
-      code: error.code,
-      body: req.body 
-    });
+    console.error("❌ Even simple POST failed:", error.message);
+    res.status(500).json({ error: "Simple POST failed", details: error.message });
   }
 });
 
