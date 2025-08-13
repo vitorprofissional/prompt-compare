@@ -1,24 +1,74 @@
-// Servidor super simples para debug
+// Servidor com teste de banco
+import 'dotenv/config';
 import express from "express";
+import postgres from 'postgres';
 
-console.log("🚀 Starting simple server...");
+console.log("🚀 Starting server with database test...");
 
 const app = express();
+app.use(express.json());
+
+// Test database connection
+let dbStatus = "not tested";
+let dbError = null;
+
+try {
+  const sql = postgres(process.env.DATABASE_URL, {
+    ssl: 'require',
+    max: 1,
+    connect_timeout: 5,
+  });
+  
+  // Simple test query
+  sql`SELECT 1 as test`.then(() => {
+    dbStatus = "connected";
+    console.log("✅ Database connected successfully");
+  }).catch((error) => {
+    dbStatus = "error";
+    dbError = error.message;
+    console.error("❌ Database connection failed:", error.message);
+  });
+} catch (error) {
+  dbStatus = "error";
+  dbError = error.message;
+  console.error("❌ Database setup failed:", error.message);
+}
 
 app.get("/api/test", (req, res) => {
   console.log("✅ Test endpoint called");
   res.json({ 
-    message: "Simple server is working!", 
+    message: "Server with database test!", 
     timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV 
+    env: process.env.NODE_ENV,
+    dbStatus,
+    dbError
   });
 });
 
-app.get("/api/projects", (req, res) => {
+app.get("/api/projects", async (req, res) => {
   console.log("📋 Projects endpoint called");
-  res.json([
-    { id: "1", name: "Test Project", description: "Test" }
-  ]);
+  
+  if (dbStatus === "connected") {
+    try {
+      const sql = postgres(process.env.DATABASE_URL, {
+        ssl: 'require',
+        max: 1,
+      });
+      
+      const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC LIMIT 5`;
+      await sql.end();
+      
+      console.log("📊 Found projects:", projects.length);
+      res.json(projects);
+    } catch (error) {
+      console.error("❌ Database query failed:", error.message);
+      res.status(500).json({ error: "Database query failed", details: error.message });
+    }
+  } else {
+    res.json([
+      { id: "1", name: "Test Project (no DB)", description: "Database not connected" }
+    ]);
+  }
 });
 
 // Catch all other routes
