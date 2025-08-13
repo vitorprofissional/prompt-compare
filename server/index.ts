@@ -3,7 +3,7 @@ import 'dotenv/config';
 import express from "express";
 import postgres from 'postgres';
 
-console.log("🚀 Starting server with database test...");
+console.log("🚀 Starting server with database test and POST support...");
 
 const app = express();
 app.use(express.json());
