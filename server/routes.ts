@@ -8,22 +8,41 @@ import {
 import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Add logging middleware for API routes
+  app.use("/api", (req, res, next) => {
+    console.log(`[API] ${req.method} ${req.path}`, req.body);
+    next();
+  });
+
+  // Test endpoint
+  app.get("/api/test", (req, res) => {
+    console.log("[API] Test endpoint called");
+    res.json({ message: "API is working!", timestamp: new Date().toISOString() });
+  });
+
   // Projects API
   app.get("/api/projects", async (req, res) => {
     try {
+      console.log("[API] Fetching projects...");
       const projects = await storage.getAllProjects();
+      console.log("[API] Projects found:", projects.length);
       res.json(projects);
     } catch (error) {
+      console.error("[API] Error fetching projects:", error);
       res.status(500).json({ error: "Failed to fetch projects" });
     }
   });
 
   app.post("/api/projects", async (req, res) => {
     try {
+      console.log("[API] Creating project with data:", req.body);
       const validatedData = insertProjectSchema.parse(req.body);
+      console.log("[API] Validated data:", validatedData);
       const project = await storage.createProject(validatedData);
+      console.log("[API] Project created:", project);
       res.status(201).json(project);
     } catch (error) {
+      console.error("[API] Error creating project:", error);
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: "Invalid project data", details: error.errors });
       } else {
