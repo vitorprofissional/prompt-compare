@@ -66,9 +66,9 @@ app.get("/api/projects", async (req, res) => {
       
       console.log("📊 Found projects:", projects.length);
       res.json(projects);
-    } catch (error) {
-      console.error("❌ Database query failed:", error.message);
-      res.status(500).json({ error: "Database query failed", details: error.message });
+    } catch (error: any) {
+      console.error("❌ Database query failed:", error?.message || error);
+      res.status(500).json({ error: "Database query failed", details: error?.message || "Unknown error" });
     }
   } else {
     res.json([
@@ -135,10 +135,10 @@ app.post("/api/projects", async (req, res) => {
       res.status(201).json(mockProject);
     }
     
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ Projects POST failed:", error);
-    console.error("❌ Error stack:", error.stack);
-    res.status(500).json({ error: "Failed to create project", details: error.message });
+    console.error("❌ Error stack:", error?.stack);
+    res.status(500).json({ error: "Failed to create project", details: error?.message || "Unknown error" });
   }
 });
 
