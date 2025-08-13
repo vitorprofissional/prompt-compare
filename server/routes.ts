@@ -4,7 +4,7 @@ import { z } from "zod";
 import { 
   insertProjectSchema, 
   insertPromptComparisonSchema 
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { storage } from "./storage.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
