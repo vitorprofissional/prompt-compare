@@ -2,43 +2,16 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { 
-  insertUserSchema, 
   insertProjectSchema, 
   insertPromptComparisonSchema 
 } from "@shared/schema";
 import { storage } from "./storage";
 
-// Ensure demo user exists
-async function ensureDemoUser() {
-  const userId = "demo-user";
-  try {
-    let user = await storage.getUser(userId);
-    if (!user) {
-      // Create demo user with fixed ID
-      await storage.createDemoUser({
-        id: userId,
-        username: "demo",
-        password: "demo"
-      });
-    }
-  } catch (error) {
-    console.log("Demo user setup:", error);
-  }
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize demo user
-  await ensureDemoUser();
-  
   // Projects API
   app.get("/api/projects", async (req, res) => {
     try {
-      const userId = req.headers['x-user-id'] as string;
-      if (!userId) {
-        return res.status(401).json({ error: "User ID required" });
-      }
-      
-      const projects = await storage.getProjectsByUserId(userId);
+      const projects = await storage.getAllProjects();
       res.json(projects);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch projects" });
@@ -47,13 +20,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", async (req, res) => {
     try {
-      const userId = req.headers['x-user-id'] as string;
-      if (!userId) {
-        return res.status(401).json({ error: "User ID required" });
-      }
-
       const validatedData = insertProjectSchema.parse(req.body);
-      const project = await storage.createProject({ ...validatedData, userId });
+      const project = await storage.createProject(validatedData);
       res.status(201).json(project);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -102,18 +70,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Prompt Comparisons API
   app.get("/api/prompt-comparisons", async (req, res) => {
     try {
-      const userId = req.headers['x-user-id'] as string;
       const projectId = req.query.projectId as string;
       
-      if (!userId) {
-        return res.status(401).json({ error: "User ID required" });
-      }
-
       let comparisons;
       if (projectId) {
         comparisons = await storage.getPromptComparisonsByProjectId(projectId);
       } else {
-        comparisons = await storage.getPromptComparisonsByUserId(userId);
+        comparisons = await storage.getAllPromptComparisons();
       }
       
       res.json(comparisons);
@@ -124,13 +87,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/prompt-comparisons", async (req, res) => {
     try {
-      const userId = req.headers['x-user-id'] as string;
-      if (!userId) {
-        return res.status(401).json({ error: "User ID required" });
-      }
-
       const validatedData = insertPromptComparisonSchema.parse(req.body);
-      const comparison = await storage.createPromptComparison({ ...validatedData, userId });
+      const comparison = await storage.createPromptComparison(validatedData);
       res.status(201).json(comparison);
     } catch (error) {
       if (error instanceof z.ZodError) {

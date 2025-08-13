@@ -43,8 +43,7 @@ interface SidebarProps {
   onSelectComparison: (comparisonId: string | undefined) => void;
 }
 
-// Mock user ID for demo - in a real app this would come from auth
-const MOCK_USER_ID = "demo-user";
+// No user authentication needed for MVP
 
 export default function Sidebar({
   isCollapsed,
@@ -65,9 +64,7 @@ export default function Sidebar({
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ["/api/projects"],
     queryFn: async () => {
-      const response = await fetch("/api/projects", {
-        headers: { "x-user-id": MOCK_USER_ID }
-      });
+      const response = await fetch("/api/projects");
       if (!response.ok) throw new Error('Failed to fetch projects');
       return response.json();
     },
@@ -80,9 +77,7 @@ export default function Sidebar({
       const url = selectedProjectId 
         ? `/api/prompt-comparisons?projectId=${selectedProjectId}`
         : "/api/prompt-comparisons";
-      const response = await fetch(url, {
-        headers: { "x-user-id": MOCK_USER_ID }
-      });
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Failed to fetch comparisons');
       return response.json();
     },
@@ -95,8 +90,7 @@ export default function Sidebar({
       const response = await fetch("/api/projects", {
         method: "POST",
         headers: { 
-          "Content-Type": "application/json",
-          "x-user-id": MOCK_USER_ID 
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(data),
       });
@@ -115,8 +109,7 @@ export default function Sidebar({
   const deleteProjectMutation = useMutation({
     mutationFn: async (projectId: string) => {
       const response = await fetch(`/api/projects/${projectId}`, {
-        method: "DELETE",
-        headers: { "x-user-id": MOCK_USER_ID },
+        method: "DELETE"
       });
       if (!response.ok) throw new Error('Failed to delete project');
       return response.text();
@@ -133,8 +126,7 @@ export default function Sidebar({
   const deleteComparisonMutation = useMutation({
     mutationFn: async (comparisonId: string) => {
       const response = await fetch(`/api/prompt-comparisons/${comparisonId}`, {
-        method: "DELETE",
-        headers: { "x-user-id": MOCK_USER_ID },
+        method: "DELETE"
       });
       if (!response.ok) throw new Error('Failed to delete comparison');
       return response.text();

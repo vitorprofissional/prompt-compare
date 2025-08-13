@@ -10,9 +10,6 @@ import { useApp } from "@/contexts/app-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save, Plus } from "lucide-react";
 
-// Mock user ID for demo - in a real app this would come from auth
-const MOCK_USER_ID = "demo-user";
-
 export default function PromptComparison() {
   const { themeDefinition } = useTheme();
   const { 
@@ -37,9 +34,7 @@ export default function PromptComparison() {
   const { data: selectedComparison } = useQuery({
     queryKey: ["/api/prompt-comparisons", selectedComparisonId],
     queryFn: async () => {
-      const response = await fetch(`/api/prompt-comparisons/${selectedComparisonId}`, {
-        headers: { "x-user-id": MOCK_USER_ID }
-      });
+      const response = await fetch(`/api/prompt-comparisons/${selectedComparisonId}`);
       if (!response.ok) throw new Error('Failed to fetch comparison');
       return response.json();
     },
@@ -70,8 +65,7 @@ export default function PromptComparison() {
       const response = await fetch(url, {
         method: selectedComparisonId ? "PUT" : "POST",
         headers: { 
-          "Content-Type": "application/json",
-          "x-user-id": MOCK_USER_ID 
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(data),
       });

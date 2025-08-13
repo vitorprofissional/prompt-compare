@@ -1,74 +1,37 @@
 import { 
-  users, 
   projects, 
   promptComparisons,
-  type User, 
-  type InsertUser, 
   type Project, 
   type InsertProject,
   type PromptComparison,
   type InsertPromptComparison
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
-  // User methods
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(insertUser: InsertUser): Promise<User>;
-  createDemoUser(user: { id: string; username: string; password: string }): Promise<User>;
-  
   // Project methods
-  getProjectsByUserId(userId: string): Promise<Project[]>;
+  getAllProjects(): Promise<Project[]>;
   getProject(id: string): Promise<Project | undefined>;
-  createProject(insertProject: InsertProject & { userId: string }): Promise<Project>;
+  createProject(insertProject: InsertProject): Promise<Project>;
   updateProject(id: string, updates: Partial<InsertProject>): Promise<Project | undefined>;
   deleteProject(id: string): Promise<boolean>;
   
   // Prompt comparison methods
+  getAllPromptComparisons(): Promise<PromptComparison[]>;
   getPromptComparisonsByProjectId(projectId: string): Promise<PromptComparison[]>;
-  getPromptComparisonsByUserId(userId: string): Promise<PromptComparison[]>;
   getPromptComparison(id: string): Promise<PromptComparison | undefined>;
-  createPromptComparison(insertComparison: InsertPromptComparison & { userId: string }): Promise<PromptComparison>;
+  createPromptComparison(insertComparison: InsertPromptComparison): Promise<PromptComparison>;
   updatePromptComparison(id: string, updates: Partial<InsertPromptComparison>): Promise<PromptComparison | undefined>;
   deletePromptComparison(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // User methods
-  async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
-  }
-
-  async createDemoUser(user: { id: string; username: string; password: string }): Promise<User> {
-    const [createdUser] = await db
-      .insert(users)
-      .values(user)
-      .returning();
-    return createdUser;
-  }
-
   // Project methods
-  async getProjectsByUserId(userId: string): Promise<Project[]> {
+  async getAllProjects(): Promise<Project[]> {
     return await db
       .select()
       .from(projects)
-      .where(eq(projects.userId, userId))
       .orderBy(desc(projects.updatedAt));
   }
 
@@ -77,7 +40,7 @@ export class DatabaseStorage implements IStorage {
     return project || undefined;
   }
 
-  async createProject(insertProject: InsertProject & { userId: string }): Promise<Project> {
+  async createProject(insertProject: InsertProject): Promise<Project> {
     const [project] = await db
       .insert(projects)
       .values(insertProject)
@@ -100,6 +63,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Prompt comparison methods
+  async getAllPromptComparisons(): Promise<PromptComparison[]> {
+    return await db
+      .select()
+      .from(promptComparisons)
+      .orderBy(desc(promptComparisons.updatedAt));
+  }
+
   async getPromptComparisonsByProjectId(projectId: string): Promise<PromptComparison[]> {
     return await db
       .select()
@@ -108,20 +78,12 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(promptComparisons.updatedAt));
   }
 
-  async getPromptComparisonsByUserId(userId: string): Promise<PromptComparison[]> {
-    return await db
-      .select()
-      .from(promptComparisons)
-      .where(eq(promptComparisons.userId, userId))
-      .orderBy(desc(promptComparisons.updatedAt));
-  }
-
   async getPromptComparison(id: string): Promise<PromptComparison | undefined> {
     const [comparison] = await db.select().from(promptComparisons).where(eq(promptComparisons.id, id));
     return comparison || undefined;
   }
 
-  async createPromptComparison(insertComparison: InsertPromptComparison & { userId: string }): Promise<PromptComparison> {
+  async createPromptComparison(insertComparison: InsertPromptComparison): Promise<PromptComparison> {
     const [comparison] = await db
       .insert(promptComparisons)
       .values(insertComparison)
