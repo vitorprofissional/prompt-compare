@@ -212,7 +212,7 @@ export default function Sidebar({
             className="text-lg font-semibold"
             style={{ color: themeDefinition.colors.foreground }}
           >
-            Projetos
+            📁 Projetos
           </h2>
           <Button
             variant="ghost"
