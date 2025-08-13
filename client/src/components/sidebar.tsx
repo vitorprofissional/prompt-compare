@@ -64,9 +64,12 @@ export default function Sidebar({
   const { data: projects = [], isLoading: projectsLoading } = useQuery({
     queryKey: ["/api/projects"],
     queryFn: async () => {
+      console.log("Buscando projetos...");
       const response = await fetch("/api/projects");
       if (!response.ok) throw new Error('Failed to fetch projects');
-      return response.json();
+      const data = await response.json();
+      console.log("Projetos carregados:", data);
+      return data;
     },
   });
 
@@ -97,11 +100,15 @@ export default function Sidebar({
       if (!response.ok) throw new Error('Failed to create project');
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log("Projeto criado com sucesso:", result);
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setNewProjectName("");
       setNewProjectDescription("");
       setIsCreateProjectOpen(false);
+    },
+    onError: (error) => {
+      console.error("Erro ao criar projeto:", error);
     },
   });
 
