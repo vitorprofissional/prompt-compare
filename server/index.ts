@@ -13,6 +13,10 @@ let dbStatus = "not tested";
 let dbError = null;
 
 try {
+  console.log("🔍 DATABASE_URL exists:", !!process.env.DATABASE_URL);
+  console.log("🔍 DATABASE_URL length:", process.env.DATABASE_URL?.length);
+  console.log("🔍 DATABASE_URL starts with:", process.env.DATABASE_URL?.substring(0, 20));
+  
   const sql = postgres(process.env.DATABASE_URL, {
     ssl: 'require',
     max: 1,
@@ -77,24 +81,62 @@ app.post("/api/simple-test", (req, res) => {
   res.json({ message: "Simple POST works", body: req.body });
 });
 
-app.post("/api/projects", (req, res) => {
+app.post("/api/projects", async (req, res) => {
   console.log("📋 Projects POST endpoint called");
+  console.log("🔍 Headers:", req.headers);
+  console.log("🔍 Method:", req.method);
+  console.log("🔍 URL:", req.url);
   
   try {
     console.log("📝 Request body:", req.body);
+    console.log("🔍 Body type:", typeof req.body);
+    console.log("🔍 Database status:", dbStatus);
     
-    // Just return success without any database operations
-    console.log("✅ Returning mock success");
-    res.status(201).json({ 
-      id: "mock-id", 
-      name: req.body.name || "Mock Project", 
-      description: req.body.description || "Mock Description",
-      created_at: new Date().toISOString()
-    });
+    if (dbStatus === "connected") {
+      // Try to insert into database
+      const sql = postgres(process.env.DATABASE_URL, {
+        ssl: 'require',
+        max: 1,
+      });
+      
+      const projectData = {
+        name: req.body.name || "New Project",
+        description: req.body.description || null
+      };
+      
+      console.log("💾 Inserting project data:", JSON.stringify(projectData));
+      console.log("💾 About to run SQL INSERT...");
+      
+      const [newProject] = await sql`
+        INSERT INTO projects (name, description) 
+        VALUES (${projectData.name}, ${projectData.description})
+        RETURNING *
+      `;
+      
+      await sql.end();
+      
+      console.log("✅ Project created successfully:", JSON.stringify(newProject));
+      console.log("✅ About to send response...");
+      res.status(201).json(newProject);
+      console.log("✅ Response sent!");
+      
+    } else {
+      // Return mock data if DB not connected
+      console.log("🔄 Database not connected, returning mock");
+      const mockProject = { 
+        id: `mock-${Date.now()}`, 
+        name: req.body.name || "Mock Project", 
+        description: req.body.description || "Mock Description",
+        created_at: new Date().toISOString()
+      };
+      console.log("🔄 Mock project:", JSON.stringify(mockProject));
+      res.status(201).json(mockProject);
+    }
     
   } catch (error) {
-    console.error("❌ Even simple POST failed:", error.message);
-    res.status(500).json({ error: "Simple POST failed", details: error.message });
+    console.error("❌ Projects POST failed:", error);
+    console.error("❌ Error stack:", error.stack);
+    res.status(500).json({ error: "Failed to create project", details: error.message });
   }
 });
 

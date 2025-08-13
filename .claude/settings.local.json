@@ -11,7 +11,9 @@
       "Bash(node:*)",
       "Bash(rm:*)",
       "Bash(mv:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx vercel:*)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []
