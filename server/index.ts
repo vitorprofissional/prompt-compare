@@ -46,7 +46,7 @@ app.get("/api/test", (req, res) => {
 });
 
 app.get("/api/projects", async (req, res) => {
-  console.log("📋 Projects endpoint called");
+  console.log("📋 Projects GET endpoint called");
   
   if (dbStatus === "connected") {
     try {
@@ -55,7 +55,7 @@ app.get("/api/projects", async (req, res) => {
         max: 1,
       });
       
-      const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC LIMIT 5`;
+      const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC LIMIT 10`;
       await sql.end();
       
       console.log("📊 Found projects:", projects.length);
@@ -68,6 +68,49 @@ app.get("/api/projects", async (req, res) => {
     res.json([
       { id: "1", name: "Test Project (no DB)", description: "Database not connected" }
     ]);
+  }
+});
+
+app.post("/api/projects", async (req, res) => {
+  console.log("📋 Projects POST endpoint called");
+  console.log("📝 Request body:", req.body);
+  
+  if (dbStatus !== "connected") {
+    return res.status(500).json({ error: "Database not connected", dbStatus, dbError });
+  }
+
+  try {
+    const { name, description } = req.body;
+    
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ error: "Project name is required" });
+    }
+
+    const sql = postgres(process.env.DATABASE_URL, {
+      ssl: 'require',
+      max: 1,
+    });
+    
+    console.log("💾 Creating project:", { name, description });
+    
+    const [newProject] = await sql`
+      INSERT INTO projects (name, description) 
+      VALUES (${name}, ${description || null})
+      RETURNING *
+    `;
+    
+    await sql.end();
+    
+    console.log("✅ Project created successfully:", newProject);
+    res.status(201).json(newProject);
+    
+  } catch (error) {
+    console.error("❌ Failed to create project:", error.message);
+    res.status(500).json({ 
+      error: "Failed to create project", 
+      details: error.message,
+      body: req.body 
+    });
   }
 });
 
