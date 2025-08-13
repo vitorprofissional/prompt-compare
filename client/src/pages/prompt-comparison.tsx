@@ -1,33 +1,109 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import PromptPanel from "@/components/prompt-panel";
 import ComparisonTools from "@/components/comparison-tools";
 import ThemeSelector from "@/components/theme-selector";
+import Sidebar from "@/components/sidebar";
 import { useTheme } from "@/contexts/theme-context";
+import { useApp } from "@/contexts/app-context";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Save, Plus } from "lucide-react";
+
+// Mock user ID for demo - in a real app this would come from auth
+const MOCK_USER_ID = "demo-user";
 
 export default function PromptComparison() {
   const { themeDefinition } = useTheme();
-  const [promptA, setPromptA] = useState("");
-  const [promptB, setPromptB] = useState("");
+  const { 
+    sidebarCollapsed, 
+    setSidebarCollapsed,
+    selectedProjectId,
+    setSelectedProjectId,
+    selectedComparisonId,
+    setSelectedComparisonId,
+    currentPromptA,
+    setCurrentPromptA,
+    currentPromptB,
+    setCurrentPromptB
+  } = useApp();
+  const queryClient = useQueryClient();
+
   const [showPreviewA, setShowPreviewA] = useState(false);
   const [showPreviewB, setShowPreviewB] = useState(false);
+  const [comparisonTitle, setComparisonTitle] = useState("Nova Comparação");
+
+  // Load selected comparison
+  const { data: selectedComparison } = useQuery({
+    queryKey: ["/api/prompt-comparisons", selectedComparisonId],
+    queryFn: async () => {
+      const response = await fetch(`/api/prompt-comparisons/${selectedComparisonId}`, {
+        headers: { "x-user-id": MOCK_USER_ID }
+      });
+      if (!response.ok) throw new Error('Failed to fetch comparison');
+      return response.json();
+    },
+    enabled: !!selectedComparisonId,
+  });
+
+  // Load comparison data when selection changes
+  useEffect(() => {
+    if (selectedComparison) {
+      setCurrentPromptA(selectedComparison.promptA || "");
+      setCurrentPromptB(selectedComparison.promptB || "");
+      setComparisonTitle(selectedComparison.title || "Comparação");
+    }
+  }, [selectedComparison, setCurrentPromptA, setCurrentPromptB]);
+
+  // Save comparison mutation
+  const saveComparisonMutation = useMutation({
+    mutationFn: async (data: {
+      title: string;
+      promptA: string;
+      promptB: string;
+      projectId?: string;
+    }) => {
+      const url = selectedComparisonId 
+        ? `/api/prompt-comparisons/${selectedComparisonId}`
+        : "/api/prompt-comparisons";
+      
+      const response = await fetch(url, {
+        method: selectedComparisonId ? "PUT" : "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "x-user-id": MOCK_USER_ID 
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to save comparison');
+      return response.json();
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/prompt-comparisons"] });
+      if (!selectedComparisonId) {
+        setSelectedComparisonId(result.id);
+      }
+    },
+  });
 
   const clearAll = useCallback(() => {
-    setPromptA("");
-    setPromptB("");
+    setCurrentPromptA("");
+    setCurrentPromptB("");
     setShowPreviewA(false);
     setShowPreviewB(false);
-  }, []);
+    setSelectedComparisonId(undefined);
+    setComparisonTitle("Nova Comparação");
+  }, [setCurrentPromptA, setCurrentPromptB, setSelectedComparisonId]);
 
   const clearPromptA = useCallback(() => {
-    setPromptA("");
+    setCurrentPromptA("");
     setShowPreviewA(false);
-  }, []);
+  }, [setCurrentPromptA]);
 
   const clearPromptB = useCallback(() => {
-    setPromptB("");
+    setCurrentPromptB("");
     setShowPreviewB(false);
-  }, []);
+  }, [setCurrentPromptB]);
 
   const togglePreviewA = useCallback(() => {
     setShowPreviewA(prev => !prev);
@@ -37,25 +113,34 @@ export default function PromptComparison() {
     setShowPreviewB(prev => !prev);
   }, []);
 
-  const statsA = useMemo(() => {
-    const chars = promptA.length;
-    const words = promptA.trim() ? promptA.trim().split(/\s+/).length : 0;
-    const lines = promptA.split('\n').length;
-    return { chars, words, lines };
-  }, [promptA]);
+  const saveComparison = useCallback(() => {
+    if (!currentPromptA.trim() && !currentPromptB.trim()) return;
+    
+    saveComparisonMutation.mutate({
+      title: comparisonTitle,
+      promptA: currentPromptA,
+      promptB: currentPromptB,
+      projectId: selectedProjectId,
+    });
+  }, [comparisonTitle, currentPromptA, currentPromptB, selectedProjectId, saveComparisonMutation]);
 
-  const statsB = useMemo(() => {
-    const chars = promptB.length;
-    const words = promptB.trim() ? promptB.trim().split(/\s+/).length : 0;
-    const lines = promptB.split('\n').length;
-    return { chars, words, lines };
-  }, [promptB]);
+  const statsA = useMemo(() => ({
+    chars: currentPromptA.length,
+    words: currentPromptA.trim() ? currentPromptA.trim().split(/\s+/).length : 0,
+    lines: currentPromptA.split('\n').length
+  }), [currentPromptA]);
+
+  const statsB = useMemo(() => ({
+    chars: currentPromptB.length,
+    words: currentPromptB.trim() ? currentPromptB.trim().split(/\s+/).length : 0,
+    lines: currentPromptB.split('\n').length
+  }), [currentPromptB]);
 
   const similarity = useMemo(() => {
-    if (!promptA.trim() || !promptB.trim()) return 0;
+    if (!currentPromptA.trim() || !currentPromptB.trim()) return 0;
     
-    const wordsA = promptA.toLowerCase().split(/\s+/);
-    const wordsB = promptB.toLowerCase().split(/\s+/);
+    const wordsA = currentPromptA.toLowerCase().split(/\s+/);
+    const wordsB = currentPromptB.toLowerCase().split(/\s+/);
     const setA = new Set(wordsA);
     const setB = new Set(wordsB);
     
@@ -63,12 +148,12 @@ export default function PromptComparison() {
     const union = new Set([...Array.from(setA), ...Array.from(setB)]);
     
     return Math.round((intersection.size / union.size) * 100);
-  }, [promptA, promptB]);
+  }, [currentPromptA, currentPromptB]);
 
   const exportComparison = useCallback(() => {
     const data = {
-      promptA: promptA,
-      promptB: promptB,
+      promptA: currentPromptA,
+      promptB: currentPromptB,
       statsA: statsA,
       statsB: statsB,
       similarity: similarity,
@@ -84,103 +169,142 @@ export default function PromptComparison() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [promptA, promptB, statsA, statsB, similarity]);
+  }, [currentPromptA, currentPromptB, statsA, statsB, similarity]);
 
   return (
     <div 
-      className="min-h-screen"
+      className="min-h-screen flex"
       style={{ backgroundColor: themeDefinition.colors.backgroundSecondary }}
     >
-      {/* Header */}
-      <header 
-        className="shadow-sm border-b"
-        style={{ 
-          backgroundColor: themeDefinition.colors.background,
-          borderColor: themeDefinition.colors.border
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 
-                className="text-2xl font-semibold"
-                style={{ color: themeDefinition.colors.foreground }}
-              >
-                Comparador de Prompts
-              </h1>
-              <p 
-                className="text-sm mt-1"
-                style={{ color: themeDefinition.colors.foregroundMuted }}
-              >
-                Compare e analise dois prompts lado a lado com suporte a Markdown e XML
-              </p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <ThemeSelector />
-              <Button 
-                variant="outline" 
-                onClick={clearAll}
-                data-testid="button-clear-all"
-              >
-                Limpar Tudo
-              </Button>
-              <Button 
-                onClick={exportComparison}
-                data-testid="button-export"
-              >
-                Exportar
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Sidebar */}
+      <Sidebar
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        selectedProjectId={selectedProjectId}
+        onSelectProject={setSelectedProjectId}
+        selectedComparisonId={selectedComparisonId}
+        onSelectComparison={setSelectedComparisonId}
+      />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-140px)]">
-          <PromptPanel
-            title="Prompt A"
-            color="blue"
-            content={promptA}
-            onContentChange={setPromptA}
-            showPreview={showPreviewA}
-            onTogglePreview={togglePreviewA}
-            onClear={clearPromptA}
-            stats={statsA}
-            placeholder="Cole seu primeiro prompt aqui...
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header 
+          className="shadow-sm border-b flex-shrink-0"
+          style={{ 
+            backgroundColor: themeDefinition.colors.background,
+            borderColor: themeDefinition.colors.border
+          }}
+        >
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h1 
+                    className="text-xl font-semibold"
+                    style={{ color: themeDefinition.colors.foreground }}
+                  >
+                    Comparador de Prompts
+                  </h1>
+                  <p 
+                    className="text-sm mt-1"
+                    style={{ color: themeDefinition.colors.foregroundMuted }}
+                  >
+                    Compare e analise dois prompts lado a lado
+                  </p>
+                </div>
+                
+                {/* Title Input */}
+                <div className="flex items-center space-x-3">
+                  <Input
+                    value={comparisonTitle}
+                    onChange={(e) => setComparisonTitle(e.target.value)}
+                    placeholder="Nome da comparação"
+                    className="w-64"
+                    data-testid="input-comparison-title"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <ThemeSelector />
+                <Button 
+                  variant="outline" 
+                  onClick={clearAll}
+                  data-testid="button-clear-all"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Comparação
+                </Button>
+                <Button 
+                  onClick={saveComparison}
+                  disabled={saveComparisonMutation.isPending}
+                  data-testid="button-save"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveComparisonMutation.isPending ? "Salvando..." : "Salvar"}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={exportComparison}
+                  data-testid="button-export"
+                >
+                  Exportar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="flex-1 p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
+            <PromptPanel
+              title="Prompt A"
+              color="blue"
+              content={currentPromptA}
+              onContentChange={setCurrentPromptA}
+              showPreview={showPreviewA}
+              onTogglePreview={togglePreviewA}
+              onClear={clearPromptA}
+              stats={statsA}
+              placeholder="Cole seu primeiro prompt aqui...
 
 Suporte completo para:
 • Formatação Markdown
 • Tags XML como <example>content</example>
 • Múltiplas linhas
 • Código e sintaxe"
-          />
-          
-          <PromptPanel
-            title="Prompt B"
-            color="green"
-            content={promptB}
-            onContentChange={setPromptB}
-            showPreview={showPreviewB}
-            onTogglePreview={togglePreviewB}
-            onClear={clearPromptB}
-            stats={statsB}
-            placeholder="Cole seu segundo prompt aqui...
+            />
+            
+            <PromptPanel
+              title="Prompt B"
+              color="green"
+              content={currentPromptB}
+              onContentChange={setCurrentPromptB}
+              showPreview={showPreviewB}
+              onTogglePreview={togglePreviewB}
+              onClear={clearPromptB}
+              stats={statsB}
+              placeholder="Cole seu segundo prompt aqui...
 
 Compare facilmente:
 • Diferenças de estrutura
 • Variações de conteúdo  
 • Efetividade das instruções
 • Formatação e organização"
-          />
-        </div>
+            />
+          </div>
 
-        <ComparisonTools
-          statsA={statsA}
-          statsB={statsB}
-          similarity={similarity}
-        />
-      </main>
+          <div className="mt-6">
+            <ComparisonTools
+              statsA={statsA}
+              statsB={statsB}
+              similarity={similarity}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

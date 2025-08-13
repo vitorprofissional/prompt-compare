@@ -2,6 +2,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Eye, Trash2 } from "lucide-react";
 import SyntaxHighlighter from "@/components/syntax-highlighter";
+import TokenInfo from "./token-info";
 import { useTheme } from "@/contexts/theme-context";
 
 interface PromptPanelProps {
@@ -54,13 +55,16 @@ export default function PromptPanel({
           >
             {title}
           </h2>
-          <span 
-            className="text-sm"
-            style={{ color: themeDefinition.colors.foregroundMuted }}
-            data-testid={`text-word-count-${color}`}
-          >
-            {stats.words} palavras
-          </span>
+          <div className="flex items-center space-x-3">
+            <span 
+              className="text-sm"
+              style={{ color: themeDefinition.colors.foregroundMuted }}
+              data-testid={`text-word-count-${color}`}
+            >
+              {stats.words} palavras
+            </span>
+            <TokenInfo content={content} />
+          </div>
         </div>
         <div className="flex items-center space-x-2">
           <Button
