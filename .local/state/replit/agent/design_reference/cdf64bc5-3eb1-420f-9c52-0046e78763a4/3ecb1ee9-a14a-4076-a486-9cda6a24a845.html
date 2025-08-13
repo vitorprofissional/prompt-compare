@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Prompts</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    },
+                    colors: {
+                        'primary': {
+                            50: '#EFF6FF',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        /* Custom scrollbar styling */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans">
+    <!-- @COMPONENT: Header -->
+    <header class="bg-white shadow-sm border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-semibold text-slate-900">Comparador de Prompts</h1>
+                    <p class="text-sm text-slate-600 mt-1">Compare e analise dois prompts lado a lado com suporte a Markdown e XML</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- @FUNCTIONALITY: Clear all button should reset both text areas -->
+                    <button data-event="click:clearAll" class="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
+                        Limpar Tudo
+                    </button>
+                    <button data-event="click:exportComparison" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors">
+                        Exportar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Header -->
+
+    <!-- @COMPONENT: MainComparison -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-140px)]">
+            
+            <!-- @COMPONENT: PromptPanel [title="Prompt A", accent="blue"] -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <h2 class="text-lg font-medium text-slate-900">Prompt A</h2>
+                        <span data-bind="promptA.wordCount" class="text-sm text-slate-500">0 palavras</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button data-event="click:togglePreviewA" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                        <button data-event="click:clearPromptA" class="p-1.5 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 p-4">
+                    <!-- @STATE: showPreviewA:boolean = false -->
+                    <div class="h-full">
+                        <textarea 
+                            data-bind="promptA.content"
+                            placeholder="Cole seu primeiro prompt aqui...
+
+Suporte completo para:
+• Formatação Markdown
+• Tags XML como <example>content</example>
+• Múltiplas linhas
+• Código e sintaxe"
+                            class="w-full h-full resize-none border-0 focus:ring-0 focus:outline-none font-mono text-sm leading-relaxed custom-scrollbar placeholder-slate-400"
+                            data-mock="true"><!-- Placeholder content shown above --></textarea>
+                    </div>
+                </div>
+
+                <!-- Preview Panel (hidden by default) -->
+                <div data-show="showPreviewA" class="hidden border-t border-slate-200 p-4 bg-slate-50 max-h-48 overflow-y-auto custom-scrollbar">
+                    <div class="text-xs font-medium text-slate-700 mb-2">PREVIEW</div>
+                    <div data-bind="promptA.rendered" class="prose prose-sm max-w-none" data-mock="true">
+                        <!-- Rendered markdown/XML preview would appear here -->
+                        <p class="text-slate-500 italic">Preview da formatação aparecerá aqui...</p>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: PromptPanel -->
+
+            <!-- @COMPONENT: PromptPanel [title="Prompt B", accent="green"] -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-slate-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <h2 class="text-lg font-medium text-slate-900">Prompt B</h2>
+                        <span data-bind="promptB.wordCount" class="text-sm text-slate-500">0 palavras</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button data-event="click:togglePreviewB" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                        <button data-event="click:clearPromptB" class="p-1.5 text-slate-400 hover:text-red-500 rounded-md hover:bg-red-50 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1 p-4">
+                    <div class="h-full">
+                        <textarea 
+                            data-bind="promptB.content"
+                            placeholder="Cole seu segundo prompt aqui...
+
+Compare facilmente:
+• Diferenças de estrutura
+• Variações de conteúdo  
+• Efetividade das instruções
+• Formatação e organização"
+                            class="w-full h-full resize-none border-0 focus:ring-0 focus:outline-none font-mono text-sm leading-relaxed custom-scrollbar placeholder-slate-400"
+                            data-mock="true"><!-- Placeholder content shown above --></textarea>
+                    </div>
+                </div>
+
+                <!-- Preview Panel (hidden by default) -->
+                <div data-show="showPreviewB" class="hidden border-t border-slate-200 p-4 bg-slate-50 max-h-48 overflow-y-auto custom-scrollbar">
+                    <div class="text-xs font-medium text-slate-700 mb-2">PREVIEW</div>
+                    <div data-bind="promptB.rendered" class="prose prose-sm max-w-none" data-mock="true">
+                        <!-- Rendered markdown/XML preview would appear here -->
+                        <p class="text-slate-500 italic">Preview da formatação aparecerá aqui...</p>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: PromptPanel -->
+        </div>
+
+        <!-- @COMPONENT: ComparisonTools -->
+        <div class="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <h3 class="text-sm font-medium text-slate-900">Ferramentas de Comparação</h3>
+                    <div class="flex items-center space-x-2">
+                        <button data-event="click:highlightDifferences" class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">
+                            Destacar Diferenças
+                        </button>
+                        <button data-event="click:showStatistics" class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">
+                            Estatísticas
+                        </button>
+                        <button data-event="click:syncScroll" class="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors">
+                            Sincronizar Scroll
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4 text-sm text-slate-600">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span data-bind="promptA.stats">Prompt A: 0 chars, 0 linhas</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span data-bind="promptB.stats">Prompt B: 0 chars, 0 linhas</span>
+                    </div>
+                    <div data-bind="similarity" class="font-medium">
+                        Similaridade: ---%
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: ComparisonTools -->
+    </main>
+    <!-- @END_COMPONENT: MainComparison -->
+
+    <!-- @COMPONENT: Shortcuts Modal (hidden by default) -->
+    <div data-show="showShortcuts" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-slate-900">Atalhos do Teclado</h3>
+                <button data-event="click:closeShortcuts" class="text-slate-400 hover:text-slate-600">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-600">Limpar tudo</span>
+                    <kbd class="px-2 py-1 bg-slate-100 rounded text-xs font-mono">Ctrl + Shift + C</kbd>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">Alternar preview</span>
+                    <kbd class="px-2 py-1 bg-slate-100 rounded text-xs font-mono">Ctrl + P</kbd>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-600">Destacar diferenças</span>
+                    <kbd class="px-2 py-1 bg-slate-100 rounded text-xs font-mono">Ctrl + D</kbd>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Shortcuts Modal -->
+
+    <script>
+        (function() {
+            // TODO: Implement prompt comparison logic, markdown rendering, and XML parsing
+            // TODO: Add real-time word counting and statistics
+            // TODO: Implement difference highlighting algorithm
+            // TODO: Add keyboard shortcuts functionality
+            // TODO: Implement export functionality (PDF, text, etc.)
+            // TODO: Add local storage for session persistence
+            
+            // Basic interactive behaviors for demonstration
+            console.log('Prompt Comparison Platform initialized');
+            
+            // Placeholder for future functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded - ready for React implementation');
+            });
+        })();
+    </script>
+</body>
+</html>
