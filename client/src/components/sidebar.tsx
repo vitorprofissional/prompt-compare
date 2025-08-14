@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Folder, 
@@ -239,71 +240,15 @@ export default function Sidebar({
         </div>
 
         {/* Create Project Button */}
-        <Dialog open={isCreateProjectOpen} onOpenChange={setIsCreateProjectOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              className="w-full mt-3" 
-              size="sm"
-              data-testid="button-create-project"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Projeto
-            </Button>
-          </DialogTrigger>
-          <DialogContent 
-            style={{
-              backgroundColor: themeDefinition.colors.background,
-              borderColor: themeDefinition.colors.border
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle style={{ color: themeDefinition.colors.foreground }}>
-                Criar Novo Projeto
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="project-name">Nome do Projeto</Label>
-                <Input
-                  id="project-name"
-                  value={newProjectName}
-                  onChange={(e) => setNewProjectName(e.target.value)}
-                  placeholder="Digite o nome do projeto"
-                  data-testid="input-project-name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="project-description">Descrição (opcional)</Label>
-                <Textarea
-                  id="project-description"
-                  value={newProjectDescription}
-                  onChange={(e) => setNewProjectDescription(e.target.value)}
-                  placeholder="Descreva seu projeto"
-                  data-testid="textarea-project-description"
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreateProjectOpen(false)}
-                  data-testid="button-cancel-project"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={() => createProjectMutation.mutate({
-                    name: newProjectName,
-                    description: newProjectDescription || undefined
-                  })}
-                  disabled={!newProjectName.trim() || createProjectMutation.isPending}
-                  data-testid="button-save-project"
-                >
-                  {createProjectMutation.isPending ? "Criando..." : "Criar"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button 
+          className="w-full mt-3" 
+          size="sm"
+          onClick={() => setIsCreateProjectOpen(true)}
+          data-testid="button-create-project"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Projeto
+        </Button>
       </div>
 
       {/* Projects List */}
@@ -448,5 +393,65 @@ export default function Sidebar({
         </div>
       </div>
     </div>
+    
+    {/* Create Project Dialog - shared between collapsed and expanded */}
+    <Dialog open={isCreateProjectOpen} onOpenChange={setIsCreateProjectOpen}>
+      <DialogContent 
+        style={{
+          backgroundColor: themeDefinition.colors.background,
+          borderColor: themeDefinition.colors.border
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Novo Projeto</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="project-name">Nome do Projeto</Label>
+            <Input
+              id="project-name"
+              value={newProjectName}
+              onChange={(e) => setNewProjectName(e.target.value)}
+              placeholder="Digite o nome do projeto"
+              data-testid="input-project-name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="project-description">Descrição (opcional)</Label>
+            <Textarea
+              id="project-description"
+              value={newProjectDescription}
+              onChange={(e) => setNewProjectDescription(e.target.value)}
+              placeholder="Descreva seu projeto"
+              data-testid="textarea-project-description"
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateProjectOpen(false)}
+              data-testid="button-cancel-project"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (newProjectName.trim()) {
+                  createProjectMutation.mutate({
+                    name: newProjectName.trim(),
+                    description: newProjectDescription.trim() || undefined,
+                  });
+                }
+              }}
+              disabled={!newProjectName.trim() || createProjectMutation.isPending}
+              data-testid="button-create-project"
+            >
+              {createProjectMutation.isPending ? "Criando..." : "Criar"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </React.Fragment>
   );
 }
