@@ -56,30 +56,24 @@ app.get("/api/test", (req, res) => {
 
 app.get("/api/projects", async (req, res) => {
   console.log("📋 Projects GET endpoint called");
-  console.log("🔍 Current DB Status:", dbStatus);
-  console.log("🔍 Current DB Error:", dbError);
   
-  if (dbStatus === "connected") {
-    try {
-      const sql = postgres(process.env.DATABASE_URL!, {
-        ssl: 'require',
-        max: 1,
-        prepare: false, // Disable prepared statements for transaction mode
-      });
-      
-      const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC LIMIT 10`;
-      await sql.end();
-      
-      console.log("📊 Found projects:", projects.length);
-      res.json(projects);
-    } catch (error: any) {
-      console.error("❌ Database query failed:", error?.message || error);
-      res.status(500).json({ error: "Database query failed", details: error?.message || "Unknown error" });
-    }
-  } else {
-    res.json([
-      { id: "1", name: "Test Project (no DB)", description: "Database not connected" }
-    ]);
+  try {
+    const sql = postgres(process.env.DATABASE_URL!, {
+      ssl: 'require',
+      max: 1,
+      prepare: false, // Disable prepared statements for transaction mode
+      connect_timeout: 10,
+    });
+    
+    const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC LIMIT 10`;
+    await sql.end();
+    
+    console.log("📊 Found projects:", projects.length);
+    res.json(projects);
+  } catch (error: any) {
+    console.error("❌ Database query failed:", error?.message || error);
+    // Return empty array instead of mock data
+    res.json([]);
   }
 });
 
