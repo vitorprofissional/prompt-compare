@@ -73,9 +73,7 @@ export default function PromptComparison() {
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/prompt-comparisons"] });
-      if (!selectedComparisonId) {
-        setSelectedComparisonId(result.id);
-      }
+      // Don't auto-select the comparison to avoid resetting fields
     },
   });
 

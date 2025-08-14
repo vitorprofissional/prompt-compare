@@ -176,79 +176,15 @@ export default function Sidebar({
         </div>
         
         <div className="flex-1 flex flex-col items-center space-y-4 py-4">
-          <Dialog open={isCreateProjectOpen} onOpenChange={setIsCreateProjectOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-8 h-8"
-                data-testid="button-add-project-collapsed"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Novo Projeto</DialogTitle>
-                <DialogDescription>
-                  Crie um novo projeto para organizar suas comparações.
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="project-name" className="block text-sm font-medium mb-2">
-                    Nome do Projeto
-                  </label>
-                  <Input
-                    id="project-name"
-                    value={newProjectName}
-                    onChange={(e) => setNewProjectName(e.target.value)}
-                    placeholder="Digite o nome do projeto"
-                    data-testid="input-project-name-collapsed"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="project-description" className="block text-sm font-medium mb-2">
-                    Descrição (opcional)
-                  </label>
-                  <Input
-                    id="project-description"
-                    value={newProjectDescription}
-                    onChange={(e) => setNewProjectDescription(e.target.value)}
-                    placeholder="Descrição do projeto"
-                    data-testid="input-project-description-collapsed"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreateProjectOpen(false)}
-                  data-testid="button-cancel-project-collapsed"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (newProjectName.trim()) {
-                      createProjectMutation.mutate({
-                        name: newProjectName.trim(),
-                        description: newProjectDescription.trim() || undefined,
-                      });
-                    }
-                  }}
-                  disabled={!newProjectName.trim() || createProjectMutation.isPending}
-                  data-testid="button-create-project-collapsed"
-                >
-                  {createProjectMutation.isPending ? "Criando..." : "Criar"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-8 h-8"
+            onClick={() => setIsCreateProjectOpen(true)}
+            data-testid="button-add-project-collapsed"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
