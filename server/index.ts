@@ -56,6 +56,8 @@ app.get("/api/test", (req, res) => {
 
 app.get("/api/projects", async (req, res) => {
   console.log("📋 Projects GET endpoint called");
+  console.log("🔍 Current DB Status:", dbStatus);
+  console.log("🔍 Current DB Error:", dbError);
   
   if (dbStatus === "connected") {
     try {
