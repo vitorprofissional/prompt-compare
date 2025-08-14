@@ -230,6 +230,92 @@ app.post("/api/prompt-comparisons", async (req, res) => {
   }
 });
 
+// Delete project endpoint
+app.delete("/api/projects/:id", async (req, res) => {
+  console.log("🗑️ Delete project endpoint called for ID:", req.params.id);
+  
+  try {
+    const { id } = req.params;
+    
+    if (dbStatus === "connected") {
+      const sql = postgres(process.env.DATABASE_URL!, {
+        ssl: 'require',
+        max: 1,
+        prepare: false,
+      });
+      
+      console.log("💾 Deleting project with ID:", id);
+      
+      const result = await sql`
+        DELETE FROM projects 
+        WHERE id = ${id}
+        RETURNING id
+      `;
+      
+      await sql.end();
+      
+      if (result.length === 0) {
+        console.log("❌ Project not found");
+        return res.status(404).json({ error: "Project not found" });
+      }
+      
+      console.log("✅ Project deleted successfully");
+      res.status(204).send();
+      
+    } else {
+      console.log("🔄 Database not connected, simulating delete");
+      res.status(204).send();
+    }
+    
+  } catch (error: any) {
+    console.error("❌ Delete project failed:", error);
+    res.status(500).json({ error: "Failed to delete project", details: error?.message || "Unknown error" });
+  }
+});
+
+// Delete comparison endpoint
+app.delete("/api/prompt-comparisons/:id", async (req, res) => {
+  console.log("🗑️ Delete comparison endpoint called for ID:", req.params.id);
+  
+  try {
+    const { id } = req.params;
+    
+    if (dbStatus === "connected") {
+      const sql = postgres(process.env.DATABASE_URL!, {
+        ssl: 'require',
+        max: 1,
+        prepare: false,
+      });
+      
+      console.log("💾 Deleting comparison with ID:", id);
+      
+      const result = await sql`
+        DELETE FROM prompt_comparisons 
+        WHERE id = ${id}
+        RETURNING id
+      `;
+      
+      await sql.end();
+      
+      if (result.length === 0) {
+        console.log("❌ Comparison not found");
+        return res.status(404).json({ error: "Comparison not found" });
+      }
+      
+      console.log("✅ Comparison deleted successfully");
+      res.status(204).send();
+      
+    } else {
+      console.log("🔄 Database not connected, simulating delete");
+      res.status(204).send();
+    }
+    
+  } catch (error: any) {
+    console.error("❌ Delete comparison failed:", error);
+    res.status(500).json({ error: "Failed to delete comparison", details: error?.message || "Unknown error" });
+  }
+});
+
 // Catch all other routes
 app.get("*", (req, res) => {
   console.log("🔀 Catch-all route:", req.path);
