@@ -104,7 +104,12 @@ app.post("/api/projects", async (req, res) => {
         const sql = postgres(process.env.DATABASE_URL!, {
           ssl: 'require',
           max: 1,
-          connect_timeout: 10,
+          connect_timeout: 15,
+          idle_timeout: 30,
+          max_lifetime: 60,
+          connection: {
+            application_name: 'prompt-compare'
+          }
         });
         await sql`SELECT 1 as test`;
         await sql.end();
