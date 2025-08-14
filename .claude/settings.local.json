@@ -13,7 +13,9 @@
       "Bash(mv:*)",
       "Bash(git commit:*)",
       "Bash(npx vercel:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "WebSearch",
+      "WebFetch(domain:supabase.com)"
     ],
     "deny": [],
     "ask": []

@@ -23,6 +23,7 @@ try {
     connect_timeout: 10,
     idle_timeout: 20,
     max_lifetime: 60,
+    prepare: false, // Disable prepared statements for transaction mode
   });
   
   // Simple test query
@@ -61,6 +62,7 @@ app.get("/api/projects", async (req, res) => {
       const sql = postgres(process.env.DATABASE_URL!, {
         ssl: 'require',
         max: 1,
+        prepare: false, // Disable prepared statements for transaction mode
       });
       
       const projects = await sql`SELECT * FROM projects ORDER BY created_at DESC LIMIT 10`;
@@ -107,6 +109,7 @@ app.post("/api/projects", async (req, res) => {
           connect_timeout: 15,
           idle_timeout: 30,
           max_lifetime: 60,
+          prepare: false, // Disable prepared statements for transaction mode
           connection: {
             application_name: 'prompt-compare'
           }
@@ -126,6 +129,7 @@ app.post("/api/projects", async (req, res) => {
       const sql = postgres(process.env.DATABASE_URL!, {
         ssl: 'require',
         max: 1,
+        prepare: false, // Disable prepared statements for transaction mode
       });
       
       const projectData = {
