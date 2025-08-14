@@ -10,10 +10,10 @@ import {
   ChevronLeft, 
   ChevronRight,
   Search,
-  Settings,
   Trash2,
   Edit2
 } from "lucide-react";
+import ThemeSelector from "./theme-selector";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,7 +157,7 @@ export default function Sidebar({
   if (isCollapsed) {
     return (
       <div 
-        className="w-12 h-full border-r flex flex-col"
+        className="w-12 h-full min-h-screen border-r flex flex-col flex-shrink-0"
         style={{
           backgroundColor: themeDefinition.colors.background,
           borderColor: themeDefinition.colors.border
@@ -501,20 +501,15 @@ export default function Sidebar({
         </ScrollArea>
       </div>
 
-      {/* Footer */}
+      {/* Footer with Theme Selector */}
       <div 
         className="p-4 border-t"
         style={{ borderColor: themeDefinition.colors.border }}
       >
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start"
-          data-testid="button-settings"
-        >
-          <Settings className="h-4 w-4 mr-2" />
-          Configurações
-        </Button>
+        <div className="space-y-2">
+          <div className="text-sm text-muted-foreground mb-2">Tema</div>
+          <ThemeSelector />
+        </div>
       </div>
     </div>
   );

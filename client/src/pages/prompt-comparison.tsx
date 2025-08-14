@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PromptPanel from "@/components/prompt-panel";
 import ComparisonTools from "@/components/comparison-tools";
-import ThemeSelector from "@/components/theme-selector";
 import Sidebar from "@/components/sidebar";
 import { useTheme } from "@/contexts/theme-context";
 import { useApp } from "@/contexts/app-context";
@@ -214,14 +213,13 @@ export default function PromptComparison() {
                     value={comparisonTitle}
                     onChange={(e) => setComparisonTitle(e.target.value)}
                     placeholder="Nome da comparação"
-                    className="w-64"
+                    className="w-48"
                     data-testid="input-comparison-title"
                   />
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
-                <ThemeSelector />
                 <Button 
                   variant="outline" 
                   onClick={clearAll}
