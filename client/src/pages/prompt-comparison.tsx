@@ -105,23 +105,14 @@ export default function PromptComparison() {
   }, []);
 
   const saveComparison = useCallback(() => {
-    console.log("🔵 Save button clicked");
-    console.log("🔵 Prompts:", { promptA: currentPromptA.length, promptB: currentPromptB.length });
+    if (!currentPromptA.trim() && !currentPromptB.trim()) return;
     
-    if (!currentPromptA.trim() && !currentPromptB.trim()) {
-      console.log("❌ No content to save");
-      return;
-    }
-    
-    const data = {
+    saveComparisonMutation.mutate({
       title: comparisonTitle,
       promptA: currentPromptA,
       promptB: currentPromptB,
       projectId: selectedProjectId,
-    };
-    
-    console.log("🔵 Saving comparison:", data);
-    saveComparisonMutation.mutate(data);
+    });
   }, [comparisonTitle, currentPromptA, currentPromptB, selectedProjectId, saveComparisonMutation]);
 
   const statsA = useMemo(() => ({

@@ -67,12 +67,19 @@ export default function Sidebar({
     queryKey: ["/api/projects"],
     queryFn: async () => {
       console.log("Buscando projetos...");
-      const response = await fetch("/api/projects");
+      const response = await fetch("/api/projects", {
+        cache: 'no-cache', // Force fresh fetch
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch projects');
       const data = await response.json();
       console.log("Projetos carregados:", data);
       return data;
     },
+    staleTime: 0, // Always consider data stale
+    gcTime: 0, // Don't cache in memory
   });
 
   // Fetch comparisons for selected project
