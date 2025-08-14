@@ -24,6 +24,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -208,6 +209,9 @@ export default function Sidebar({
           >
             <DialogHeader>
               <DialogTitle>Novo Projeto</DialogTitle>
+              <DialogDescription>
+                Crie um novo projeto para organizar suas comparações de prompts.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -466,6 +470,9 @@ export default function Sidebar({
         >
           <DialogHeader>
             <DialogTitle>Novo Projeto</DialogTitle>
+            <DialogDescription>
+              Crie um novo projeto para organizar suas comparações de prompts.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
