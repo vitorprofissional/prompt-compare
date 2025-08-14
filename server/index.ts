@@ -173,6 +173,63 @@ app.post("/api/projects", async (req, res) => {
   }
 });
 
+// Prompt Comparisons API
+app.post("/api/prompt-comparisons", async (req, res) => {
+  console.log("📝 Prompt comparison POST endpoint called");
+  
+  try {
+    console.log("📝 Request body:", req.body);
+    
+    if (dbStatus === "connected") {
+      const sql = postgres(process.env.DATABASE_URL!, {
+        ssl: 'require',
+        max: 1,
+        prepare: false,
+      });
+      
+      const comparisonData = {
+        project_id: req.body.projectId || null,
+        title: req.body.title || "Nova Comparação",
+        prompt_a: req.body.promptA || "",
+        prompt_b: req.body.promptB || "",
+        model_a: req.body.modelA || null,
+        model_b: req.body.modelB || null,
+        response_a: req.body.responseA || null,
+        response_b: req.body.responseB || null
+      };
+      
+      console.log("💾 Inserting comparison:", JSON.stringify(comparisonData));
+      
+      const [newComparison] = await sql`
+        INSERT INTO prompt_comparisons (project_id, title, prompt_a, prompt_b, model_a, model_b, response_a, response_b) 
+        VALUES (${comparisonData.project_id}, ${comparisonData.title}, ${comparisonData.prompt_a}, ${comparisonData.prompt_b}, ${comparisonData.model_a}, ${comparisonData.model_b}, ${comparisonData.response_a}, ${comparisonData.response_b})
+        RETURNING *
+      `;
+      
+      await sql.end();
+      
+      console.log("✅ Comparison created:", JSON.stringify(newComparison));
+      res.status(201).json(newComparison);
+      
+    } else {
+      console.log("🔄 Database not connected, returning mock comparison");
+      const mockComparison = {
+        id: `mock-comp-${Date.now()}`,
+        project_id: req.body.projectId || null,
+        title: req.body.title || "Nova Comparação",
+        prompt_a: req.body.promptA || "",
+        prompt_b: req.body.promptB || "",
+        created_at: new Date().toISOString()
+      };
+      res.status(201).json(mockComparison);
+    }
+    
+  } catch (error: any) {
+    console.error("❌ Comparison POST failed:", error);
+    res.status(500).json({ error: "Failed to create comparison", details: error?.message || "Unknown error" });
+  }
+});
+
 // Catch all other routes
 app.get("*", (req, res) => {
   console.log("🔀 Catch-all route:", req.path);
