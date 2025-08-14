@@ -95,6 +95,26 @@ app.post("/api/projects", async (req, res) => {
     console.log("📝 Request body:", req.body);
     console.log("🔍 Body type:", typeof req.body);
     console.log("🔍 Database status:", dbStatus);
+    console.log("🔍 Database error:", dbError);
+    
+    // Force test database connection
+    if (dbStatus !== "connected") {
+      console.log("⚠️ Database not connected, testing now...");
+      try {
+        const sql = postgres(process.env.DATABASE_URL!, {
+          ssl: 'require',
+          max: 1,
+          connect_timeout: 10,
+        });
+        await sql`SELECT 1 as test`;
+        await sql.end();
+        console.log("✅ Direct connection test successful!");
+        dbStatus = "connected";
+      } catch (testError: any) {
+        console.error("❌ Direct connection test failed:", testError?.message || testError);
+        console.error("❌ Full test error:", testError);
+      }
+    }
     
     if (dbStatus === "connected") {
       // Try to insert into database
