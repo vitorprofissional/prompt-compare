@@ -26,6 +26,7 @@ try {
   });
   
   // Simple test query
+  console.log("🔄 Attempting database connection...");
   sql`SELECT 1 as test`.then(() => {
     dbStatus = "connected";
     console.log("✅ Database connected successfully");
@@ -33,6 +34,7 @@ try {
     dbStatus = "error";
     dbError = error?.message || "Unknown error";
     console.error("❌ Database connection failed:", error?.message || error);
+    console.error("❌ Full error:", error);
   });
 } catch (error: any) {
   dbStatus = "error";
