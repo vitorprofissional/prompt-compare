@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import PromptPanel from "@/components/prompt-panel";
 import ComparisonTools from "@/components/comparison-tools";
 import Sidebar from "@/components/sidebar";
+import SEOHead from "@/components/seo-head";
 import { useTheme } from "@/contexts/theme-context";
 import { useApp } from "@/contexts/app-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -259,7 +260,30 @@ export default function PromptComparison() {
     URL.revokeObjectURL(url);
   }, [currentPromptA, currentPromptB, statsA, statsB, similarity]);
 
+  // Generate dynamic SEO based on content
+  const seoTitle = selectedComparison?.title 
+    ? `${selectedComparison.title} - PromptCompare | VMD+`
+    : "PromptCompare - Comparador de Prompts AI | VMD+";
+    
+  const seoDescription = selectedComparison?.title
+    ? `Comparando: ${selectedComparison.title}. Análise detalhada de prompts com highlighting de diferenças e estatísticas.`
+    : "Compare prompts de AI lado a lado com highlighting inteligente. Ferramenta profissional para engenheiros de prompt e desenvolvedores.";
+
   return (
+    <>
+      <SEOHead 
+        title={seoTitle}
+        description={seoDescription}
+        keywords={[
+          "prompt engineering", 
+          "AI prompts", 
+          "comparador de texto", 
+          "prompt comparison", 
+          "inteligência artificial", 
+          "VMD+",
+          ...(selectedComparison?.title ? [selectedComparison.title] : [])
+        ]}
+      />
     <div 
       className="min-h-screen flex"
       style={{ backgroundColor: themeDefinition.colors.backgroundSecondary }}
@@ -401,5 +425,6 @@ Compare facilmente:
         </div>
       </div>
     </div>
+    </>
   );
 }
