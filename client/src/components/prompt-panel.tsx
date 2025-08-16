@@ -40,9 +40,17 @@ export default function PromptPanel({
       return content;
     }
 
-    const currentWords = content.split(/(\s+)/);
-    const otherWords = otherContent.split(/(\s+)/);
-    const highlightColor = color === 'blue' ? 'bg-yellow-200' : 'bg-orange-200';
+    const currentWords = content.split(/(\s+|\n)/);
+    const otherWords = otherContent.split(/(\s+|\n)/);
+    
+    // Usar cores baseadas no tema atual
+    const isLightTheme = themeDefinition.colors.background === '#ffffff' || 
+                        themeDefinition.colors.background === '#fff' ||
+                        themeDefinition.colors.background.includes('255');
+    
+    const highlightColor = color === 'blue' 
+      ? (isLightTheme ? '#d97706' : '#fbbf24')  // laranja escuro / amarelo claro
+      : (isLightTheme ? '#2563eb' : '#fb923c');  // azul escuro / laranja claro
     
     const maxLength = Math.max(currentWords.length, otherWords.length);
     const result = [];
@@ -51,9 +59,11 @@ export default function PromptPanel({
       const currentWord = currentWords[i] || '';
       const otherWord = otherWords[i] || '';
       
-      if (currentWord !== otherWord && currentWord.trim() !== '') {
+      if (currentWord === '\n') {
+        result.push(<br key={i} />);
+      } else if (currentWord !== otherWord && currentWord.trim() !== '') {
         result.push(
-          <span key={i} className={`${highlightColor} px-1 rounded`}>
+          <span key={i} style={{ color: highlightColor, fontWeight: 'bold' }}>
             {currentWord}
           </span>
         );
@@ -135,10 +145,11 @@ export default function PromptPanel({
             <>
               {/* Overlay com texto highlighting */}
               <div 
-                className="absolute top-0 left-0 w-full h-full font-mono text-sm leading-relaxed p-3 overflow-auto pointer-events-none z-10"
+                className="absolute top-0 left-0 w-full h-full font-mono text-sm leading-relaxed p-3 overflow-auto pointer-events-none z-10 whitespace-pre-wrap"
                 style={{
                   color: themeDefinition.colors.foreground,
-                  backgroundColor: 'transparent'
+                  backgroundColor: 'transparent',
+                  lineHeight: '1.625'
                 }}
               >
                 {generateHighlightedText()}

@@ -200,6 +200,15 @@ export default function PromptComparison() {
       promptA: currentPromptA,
       promptB: currentPromptB,
       projectId: selectedProjectId,
+    }, {
+      onSuccess: () => {
+        setOriginalData({ 
+          title: comparisonTitle, 
+          promptA: currentPromptA, 
+          promptB: currentPromptB 
+        });
+        setHasUnsavedChanges(false);
+      }
     });
   }, [comparisonTitle, currentPromptA, currentPromptB, selectedProjectId, saveComparisonMutation]);
 
