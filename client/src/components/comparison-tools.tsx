@@ -11,6 +11,7 @@ interface ComparisonToolsProps {
 export default function ComparisonTools({ statsA, statsB, similarity }: ComparisonToolsProps) {
   const { themeDefinition } = useTheme();
   const [differencesHighlighted, setDifferencesHighlighted] = useState(false);
+  
   const [syncScrollEnabled, setSyncScrollEnabled] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
 

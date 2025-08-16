@@ -59,7 +59,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#21252b',
       backgroundTertiary: '#32363e',
       foreground: '#abb2bf',
-      foregroundMuted: '#5c6370',
+      foregroundMuted: '#ffffff',
       keyword: '#c678dd',
       string: '#98c379',
       number: '#d19a66',
@@ -113,7 +113,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#161b22',
       backgroundTertiary: '#21262d',
       foreground: '#e6edf3',
-      foregroundMuted: '#7d8590',
+      foregroundMuted: '#ffffff',
       keyword: '#ff7b72',
       string: '#a5d6ff',
       number: '#79c0ff',
@@ -140,7 +140,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#1e1f29',
       backgroundTertiary: '#3d4046',
       foreground: '#f8f8f2',
-      foregroundMuted: '#6272a4',
+      foregroundMuted: '#ffffff',
       keyword: '#ff79c6',
       string: '#f1fa8c',
       number: '#bd93f9',
@@ -167,7 +167,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#1e1f1c',
       backgroundTertiary: '#3e3d32',
       foreground: '#f8f8f2',
-      foregroundMuted: '#75715e',
+      foregroundMuted: '#ffffff',
       keyword: '#f92672',
       string: '#e6db74',
       number: '#ae81ff',
@@ -221,7 +221,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#242933',
       backgroundTertiary: '#3b4252',
       foreground: '#eceff4',
-      foregroundMuted: '#616e88',
+      foregroundMuted: '#ffffff',
       keyword: '#81a1c1',
       string: '#a3be8c',
       number: '#b48ead',
@@ -248,7 +248,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#073642',
       backgroundTertiary: '#0d4f62',
       foreground: '#fdf6e3',
-      foregroundMuted: '#93a1a1',
+      foregroundMuted: '#ffffff',
       keyword: '#268bd2',
       string: '#2aa198',
       number: '#d33682',
@@ -302,7 +302,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#1e272c',
       backgroundTertiary: '#37474f',
       foreground: '#eeffff',
-      foregroundMuted: '#546e7a',
+      foregroundMuted: '#ffffff',
       keyword: '#c792ea',
       string: '#c3e88d',
       number: '#f78c6c',
@@ -329,7 +329,7 @@ export const themes: Record<ThemeName, ThemeDefinition> = {
       backgroundSecondary: '#0c0c0c',
       backgroundTertiary: '#1c1c1c',
       foreground: '#ffffff',
-      foregroundMuted: '#c0c0c0',
+      foregroundMuted: '#ffffff',
       keyword: '#569cd6',
       string: '#ce9178',
       number: '#b5cea8',
@@ -403,6 +403,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const theme = themes[currentTheme];
     const root = document.documentElement;
+    
+    // Set data-theme attribute for CSS targeting
+    root.setAttribute('data-theme', currentTheme);
+    
+    // Add dark class for fallback
+    if (theme.category === 'dark' || theme.category === 'high-contrast') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
     
     // Apply CSS custom properties
     root.style.setProperty('--editor-bg', theme.colors.background);

@@ -169,6 +169,173 @@ app.post("/api/projects", async (req, res) => {
   }
 });
 
+// GET prompt comparisons - with optional projectId filter
+app.get("/api/prompt-comparisons", async (req, res) => {
+  console.log("📋 Prompt comparisons GET endpoint called");
+  console.log("🔍 Query params:", req.query);
+  
+  try {
+    const { projectId } = req.query;
+    
+    if (dbStatus === "connected") {
+      const sql = postgres(process.env.DATABASE_URL!, {
+        ssl: 'require',
+        max: 1,
+        prepare: false,
+      });
+      
+      let comparisons;
+      if (projectId) {
+        console.log("📊 Fetching comparisons for project:", projectId);
+        comparisons = await sql`
+          SELECT * FROM prompt_comparisons 
+          WHERE project_id = ${projectId as string}
+          ORDER BY created_at DESC
+        `;
+      } else {
+        console.log("📊 Fetching all comparisons");
+        comparisons = await sql`
+          SELECT * FROM prompt_comparisons 
+          ORDER BY created_at DESC 
+          LIMIT 50
+        `;
+      }
+      
+      await sql.end();
+      
+      console.log("📊 Found comparisons:", comparisons.length);
+      res.json(comparisons);
+      
+    } else {
+      console.log("🔄 Database not connected, returning empty array");
+      res.json([]);
+    }
+    
+  } catch (error: any) {
+    console.error("❌ Comparisons GET failed:", error);
+    res.status(500).json({ error: "Failed to fetch comparisons", details: error?.message || "Unknown error" });
+  }
+});
+
+// GET single prompt comparison by ID
+app.get("/api/prompt-comparisons/:id", async (req, res) => {
+  console.log("📋 Single comparison GET endpoint called for ID:", req.params.id);
+  
+  try {
+    const { id } = req.params;
+    
+    if (dbStatus === "connected") {
+      const sql = postgres(process.env.DATABASE_URL!, {
+        ssl: 'require',
+        max: 1,
+        prepare: false,
+      });
+      
+      console.log("📊 Fetching comparison with ID:", id);
+      
+      const [comparison] = await sql`
+        SELECT * FROM prompt_comparisons 
+        WHERE id = ${id}
+      `;
+      
+      await sql.end();
+      
+      if (!comparison) {
+        console.log("❌ Comparison not found");
+        return res.status(404).json({ error: "Comparison not found" });
+      }
+      
+      console.log("✅ Comparison found:", JSON.stringify(comparison));
+      res.json(comparison);
+      
+    } else {
+      console.log("🔄 Database not connected, returning mock");
+      const mockComparison = {
+        id,
+        title: "Mock Comparison",
+        prompt_a: "Mock Prompt A",
+        prompt_b: "Mock Prompt B",
+        metadata: null,
+        project_id: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      res.json(mockComparison);
+    }
+    
+  } catch (error: any) {
+    console.error("❌ Single comparison GET failed:", error);
+    res.status(500).json({ error: "Failed to fetch comparison", details: error?.message || "Unknown error" });
+  }
+});
+
+// PUT update prompt comparison
+app.put("/api/prompt-comparisons/:id", async (req, res) => {
+  console.log("📝 Prompt comparison PUT endpoint called for ID:", req.params.id);
+  console.log("📝 Request body:", req.body);
+  
+  try {
+    const { id } = req.params;
+    
+    if (dbStatus === "connected") {
+      const sql = postgres(process.env.DATABASE_URL!, {
+        ssl: 'require',
+        max: 1,
+        prepare: false,
+      });
+      
+      const updateData = {
+        title: req.body.title || req.body.name || "Updated Comparison",
+        prompt_a: req.body.promptA || req.body.prompt_a || "",
+        prompt_b: req.body.promptB || req.body.prompt_b || "",
+        metadata: req.body.metadata || null,
+      };
+      
+      console.log("💾 Updating comparison:", JSON.stringify(updateData));
+      
+      const [updatedComparison] = await sql`
+        UPDATE prompt_comparisons 
+        SET 
+          title = ${updateData.title},
+          prompt_a = ${updateData.prompt_a},
+          prompt_b = ${updateData.prompt_b},
+          metadata = ${updateData.metadata},
+          updated_at = NOW()
+        WHERE id = ${id}
+        RETURNING *
+      `;
+      
+      await sql.end();
+      
+      if (!updatedComparison) {
+        console.log("❌ Comparison not found for update");
+        return res.status(404).json({ error: "Comparison not found" });
+      }
+      
+      console.log("✅ Comparison updated:", JSON.stringify(updatedComparison));
+      res.json(updatedComparison);
+      
+    } else {
+      console.log("🔄 Database not connected, returning mock update");
+      const mockUpdated = {
+        id,
+        title: req.body.title || req.body.name || "Updated Comparison",
+        prompt_a: req.body.promptA || req.body.prompt_a || "",
+        prompt_b: req.body.promptB || req.body.prompt_b || "",
+        metadata: req.body.metadata || null,
+        project_id: req.body.projectId || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      res.json(mockUpdated);
+    }
+    
+  } catch (error: any) {
+    console.error("❌ Comparison PUT failed:", error);
+    res.status(500).json({ error: "Failed to update comparison", details: error?.message || "Unknown error" });
+  }
+});
+
 // Prompt Comparisons API
 app.post("/api/prompt-comparisons", async (req, res) => {
   console.log("📝 Prompt comparison POST endpoint called");

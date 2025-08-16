@@ -11,7 +11,8 @@ import { Palette, Check } from "lucide-react";
 import { useTheme, ThemeName, themes } from "@/contexts/theme-context";
 
 export default function ThemeSelector() {
-  const { currentTheme, setTheme } = useTheme();
+  const { currentTheme, setTheme, themeDefinition } = useTheme();
+  
 
   const themesByCategory = {
     dark: Object.values(themes).filter(theme => theme.category === 'dark'),
@@ -44,7 +45,10 @@ export default function ThemeSelector() {
         
         {Object.entries(themesByCategory).map(([category, categoryThemes]) => (
           <div key={category}>
-            <DropdownMenuLabel className="text-xs text-muted-foreground font-medium">
+            <DropdownMenuLabel 
+              className="text-xs font-medium"
+              style={{ color: themeDefinition.colors.foregroundMuted }}
+            >
               {categoryLabels[category as keyof typeof categoryLabels]}
             </DropdownMenuLabel>
             {categoryThemes.map((theme) => (

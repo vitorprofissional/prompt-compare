@@ -11,6 +11,8 @@ import { Save, Plus } from "lucide-react";
 
 export default function PromptComparison() {
   const { themeDefinition } = useTheme();
+  
+  
   const { 
     sidebarCollapsed, 
     setSidebarCollapsed,
@@ -43,8 +45,8 @@ export default function PromptComparison() {
   // Load comparison data when selection changes
   useEffect(() => {
     if (selectedComparison) {
-      setCurrentPromptA(selectedComparison.promptA || "");
-      setCurrentPromptB(selectedComparison.promptB || "");
+      setCurrentPromptA(selectedComparison.prompt_a || "");
+      setCurrentPromptB(selectedComparison.prompt_b || "");
       setComparisonTitle(selectedComparison.title || "Comparação");
     }
   }, [selectedComparison, setCurrentPromptA, setCurrentPromptB]);

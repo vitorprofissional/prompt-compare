@@ -68,7 +68,7 @@
   --secondary: hsl(195.0000 15.3846% 94.9020%);
   --secondary-foreground: hsl(210 25% 7.8431%);
   --muted: hsl(0 0% 9.4118%);
-  --muted-foreground: hsl(210 3.3898% 46.2745%);
+  --muted-foreground: hsl(0 0% 100%);
   --accent: hsl(205.7143 70% 7.8431%);
   --accent-foreground: hsl(217.2 91.2% 59.8%);
   --destructive: hsl(356.3033 90.5579% 54.3137%);
@@ -216,4 +216,21 @@
 .theme-preview-dot {
   border: 1px solid var(--border);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Force white text in all dark themes */
+[data-theme="one-dark-pro"] .text-muted-foreground,
+[data-theme="github-dark"] .text-muted-foreground,
+[data-theme="dracula"] .text-muted-foreground,
+[data-theme="monokai"] .text-muted-foreground,
+[data-theme="nord"] .text-muted-foreground,
+[data-theme="solarized-dark"] .text-muted-foreground,
+[data-theme="material-theme"] .text-muted-foreground,
+[data-theme="high-contrast-dark"] .text-muted-foreground {
+  color: #ffffff !important;
+}
+
+/* Also handle the dark class fallback */
+.dark .text-muted-foreground {
+  color: #ffffff !important;
 }

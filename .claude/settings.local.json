@@ -15,9 +15,17 @@
       "Bash(npx vercel:*)",
       "Bash(vercel:*)",
       "WebSearch",
-      "WebFetch(domain:supabase.com)"
+      "WebFetch(domain:supabase.com)",
+      "Bash(lsof:*)",
+      "Bash(kill:*)",
+      "Bash(echo $PORT)",
+      "Bash(PORT=3001 npm run dev)",
+      "Bash(npx:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:postgrest.org)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "defaultMode": "acceptEdits"
   }
 }

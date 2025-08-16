@@ -30,7 +30,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useTheme } from "@/contexts/theme-context";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -57,6 +56,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const { themeDefinition } = useTheme();
   const queryClient = useQueryClient();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
@@ -295,7 +295,10 @@ export default function Sidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search 
+            className="absolute left-2 top-2.5 h-4 w-4" 
+            style={{ color: themeDefinition.colors.foregroundMuted }}
+          />
           <Input
             placeholder="Buscar projetos..."
             value={searchTerm}
@@ -336,7 +339,12 @@ export default function Sidebar({
 
             {/* Projects */}
             {projectsLoading ? (
-              <div className="text-sm text-muted-foreground p-2">Carregando projetos...</div>
+              <div 
+                className="text-sm p-2"
+                style={{ color: themeDefinition.colors.foregroundMuted }}
+              >
+                Carregando projetos...
+              </div>
             ) : filteredProjects.length === 0 ? (
               <div 
                 className="text-sm p-2"
@@ -404,15 +412,20 @@ export default function Sidebar({
                         </div>
                       ) : (
                         filteredComparisons.map((comparison: PromptComparison) => (
-                          <div key={comparison.id} className="flex items-center">
+                          <div key={comparison.id} className="flex items-center gap-1">
                             <Button
                               variant={selectedComparisonId === comparison.id ? "secondary" : "ghost"}
-                              className="flex-1 justify-start text-xs h-7"
+                              className="flex-1 justify-start text-xs h-7 min-w-0"
                               onClick={() => onSelectComparison(comparison.id)}
                               data-testid={`button-comparison-${comparison.id}`}
                             >
-                              <MessageSquare className="h-3 w-3 mr-2" />
-                              <span className="truncate">{comparison.title}</span>
+                              <MessageSquare className="h-3 w-3 mr-2 shrink-0" />
+                              <span 
+                                className="truncate text-left max-w-full overflow-hidden" 
+                                title={comparison.title}
+                              >
+                                {comparison.title.length > 25 ? `${comparison.title.substring(0, 25)}...` : comparison.title}
+                              </span>
                             </Button>
                             
                             <DropdownMenu>
@@ -454,7 +467,12 @@ export default function Sidebar({
         style={{ borderColor: themeDefinition.colors.border }}
       >
         <div className="space-y-2">
-          <div className="text-sm text-muted-foreground mb-2">Tema</div>
+          <div 
+            className="text-sm mb-2" 
+            style={{ color: themeDefinition.colors.foregroundMuted }}
+          >
+            Tema
+          </div>
           <ThemeSelector />
         </div>
       </div>

@@ -22,6 +22,7 @@ export default function TokenInfo({ content }: TokenInfoProps) {
   const { themeDefinition } = useTheme();
   const models = getAllModels();
   
+  
   const modelKeys = Object.keys({
     'gpt-4o-mini': 1,
     'gemini-2.0-flash': 1,
@@ -39,7 +40,10 @@ export default function TokenInfo({ content }: TokenInfoProps) {
   
   if (!content.trim()) {
     return (
-      <div className="flex items-center space-x-1 text-xs text-muted-foreground">
+      <div 
+        className="flex items-center space-x-1 text-xs"
+        style={{ color: themeDefinition.colors.foregroundMuted }}
+      >
         <span>0 tokens</span>
       </div>
     );

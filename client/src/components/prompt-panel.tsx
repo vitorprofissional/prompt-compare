@@ -30,6 +30,7 @@ export default function PromptPanel({
 }: PromptPanelProps) {
   const { themeDefinition } = useTheme();
   
+  
   const colorClasses = {
     blue: "bg-blue-500",
     green: "bg-green-500"
