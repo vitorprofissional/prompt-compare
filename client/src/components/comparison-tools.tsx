@@ -6,24 +6,21 @@ interface ComparisonToolsProps {
   statsA: { chars: number; words: number; lines: number };
   statsB: { chars: number; words: number; lines: number };
   similarity: number;
+  onHighlightToggle?: (enabled: boolean) => void;
 }
 
-export default function ComparisonTools({ statsA, statsB, similarity }: ComparisonToolsProps) {
+export default function ComparisonTools({ statsA, statsB, similarity, onHighlightToggle }: ComparisonToolsProps) {
   const { themeDefinition } = useTheme();
   const [differencesHighlighted, setDifferencesHighlighted] = useState(false);
   
-  const [syncScrollEnabled, setSyncScrollEnabled] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
 
   const highlightDifferences = () => {
-    setDifferencesHighlighted(!differencesHighlighted);
-    // TODO: Implement difference highlighting logic
+    const newState = !differencesHighlighted;
+    setDifferencesHighlighted(newState);
+    onHighlightToggle?.(newState);
   };
 
-  const toggleSyncScroll = () => {
-    setSyncScrollEnabled(!syncScrollEnabled);
-    // TODO: Implement synchronized scrolling
-  };
 
   const toggleStatistics = () => {
     setShowStatistics(!showStatistics);
@@ -71,19 +68,6 @@ export default function ComparisonTools({ statsA, statsB, similarity }: Comparis
               data-testid="button-show-statistics"
             >
               Estatísticas
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleSyncScroll}
-              className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                syncScrollEnabled 
-                  ? 'bg-primary-100 text-primary-700 border-primary-300' 
-                  : 'text-slate-700 bg-slate-100 hover:bg-slate-200'
-              }`}
-              data-testid="button-sync-scroll"
-            >
-              Sincronizar Scroll
             </Button>
           </div>
         </div>

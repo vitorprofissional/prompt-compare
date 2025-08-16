@@ -42,6 +42,7 @@ interface SidebarProps {
   onSelectProject: (projectId: string | undefined) => void;
   selectedComparisonId?: string;
   onSelectComparison: (comparisonId: string | undefined) => void;
+  hasUnsavedChanges?: boolean;
 }
 
 // No user authentication needed for MVP
@@ -53,6 +54,7 @@ export default function Sidebar({
   onSelectProject,
   selectedComparisonId,
   onSelectComparison,
+  hasUnsavedChanges = false,
 }: SidebarProps) {
   const { themeDefinition } = useTheme();
   const queryClient = useQueryClient();

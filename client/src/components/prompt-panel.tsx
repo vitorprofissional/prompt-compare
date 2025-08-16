@@ -15,6 +15,8 @@ interface PromptPanelProps {
   onClear: () => void;
   stats: { chars: number; words: number; lines: number };
   placeholder: string;
+  highlightDifferences?: boolean;
+  otherContent?: string;
 }
 
 export default function PromptPanel({
@@ -26,10 +28,42 @@ export default function PromptPanel({
   onTogglePreview,
   onClear,
   stats,
-  placeholder
+  placeholder,
+  highlightDifferences = false,
+  otherContent = ""
 }: PromptPanelProps) {
   const { themeDefinition } = useTheme();
   
+  // Função para gerar highlighting de diferenças
+  const generateHighlightedText = () => {
+    if (!highlightDifferences || !otherContent || !content) {
+      return content;
+    }
+
+    const currentWords = content.split(/(\s+)/);
+    const otherWords = otherContent.split(/(\s+)/);
+    const highlightColor = color === 'blue' ? 'bg-yellow-200' : 'bg-orange-200';
+    
+    const maxLength = Math.max(currentWords.length, otherWords.length);
+    const result = [];
+
+    for (let i = 0; i < maxLength; i++) {
+      const currentWord = currentWords[i] || '';
+      const otherWord = otherWords[i] || '';
+      
+      if (currentWord !== otherWord && currentWord.trim() !== '') {
+        result.push(
+          <span key={i} className={`${highlightColor} px-1 rounded`}>
+            {currentWord}
+          </span>
+        );
+      } else {
+        result.push(currentWord);
+      }
+    }
+
+    return result;
+  };
   
   const colorClasses = {
     blue: "bg-blue-500",
@@ -96,18 +130,46 @@ export default function PromptPanel({
       </div>
       
       <div className="flex-1 p-4">
-        <div className="h-full">
-          <Textarea
-            value={content}
-            onChange={(e) => onContentChange(e.target.value)}
-            placeholder={placeholder}
-            className="editor-textarea w-full h-full resize-none border-0 focus:ring-0 focus:outline-none font-mono text-sm leading-relaxed custom-scrollbar"
-            style={{
-              backgroundColor: themeDefinition.colors.background,
-              color: themeDefinition.colors.foreground
-            }}
-            data-testid={`textarea-prompt-${color}`}
-          />
+        <div className="h-full relative">
+          {highlightDifferences && content && otherContent ? (
+            <>
+              {/* Overlay com texto highlighting */}
+              <div 
+                className="absolute top-0 left-0 w-full h-full font-mono text-sm leading-relaxed p-3 overflow-auto pointer-events-none z-10"
+                style={{
+                  color: themeDefinition.colors.foreground,
+                  backgroundColor: 'transparent'
+                }}
+              >
+                {generateHighlightedText()}
+              </div>
+              {/* Textarea transparente para edição */}
+              <Textarea
+                value={content}
+                onChange={(e) => onContentChange(e.target.value)}
+                placeholder={placeholder}
+                className="editor-textarea w-full h-full resize-none border-0 focus:ring-0 focus:outline-none font-mono text-sm leading-relaxed custom-scrollbar"
+                style={{
+                  backgroundColor: themeDefinition.colors.background,
+                  color: 'transparent',
+                  caretColor: themeDefinition.colors.foreground
+                }}
+                data-testid={`textarea-prompt-${color}`}
+              />
+            </>
+          ) : (
+            <Textarea
+              value={content}
+              onChange={(e) => onContentChange(e.target.value)}
+              placeholder={placeholder}
+              className="editor-textarea w-full h-full resize-none border-0 focus:ring-0 focus:outline-none font-mono text-sm leading-relaxed custom-scrollbar"
+              style={{
+                backgroundColor: themeDefinition.colors.background,
+                color: themeDefinition.colors.foreground
+              }}
+              data-testid={`textarea-prompt-${color}`}
+            />
+          )}
         </div>
       </div>
 

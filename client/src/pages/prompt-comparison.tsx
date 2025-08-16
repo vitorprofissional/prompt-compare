@@ -29,7 +29,10 @@ export default function PromptComparison() {
 
   const [showPreviewA, setShowPreviewA] = useState(false);
   const [showPreviewB, setShowPreviewB] = useState(false);
-  const [comparisonTitle, setComparisonTitle] = useState("Nova Comparação");
+  const [comparisonTitle, setComparisonTitle] = useState("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [originalData, setOriginalData] = useState({ title: "", promptA: "", promptB: "" });
+  const [highlightDifferences, setHighlightDifferences] = useState(false);
 
   // Load selected comparison
   const { data: selectedComparison } = useQuery({
@@ -45,11 +48,40 @@ export default function PromptComparison() {
   // Load comparison data when selection changes
   useEffect(() => {
     if (selectedComparison) {
-      setCurrentPromptA(selectedComparison.prompt_a || "");
-      setCurrentPromptB(selectedComparison.prompt_b || "");
-      setComparisonTitle(selectedComparison.title || "Comparação");
+      const title = selectedComparison.title || "";
+      const promptA = selectedComparison.prompt_a || "";
+      const promptB = selectedComparison.prompt_b || "";
+      
+      setCurrentPromptA(promptA);
+      setCurrentPromptB(promptB);
+      setComparisonTitle(title);
+      setOriginalData({ title, promptA, promptB });
+      setHasUnsavedChanges(false);
+    } else {
+      // Nova comparação
+      setCurrentPromptA("");
+      setCurrentPromptB("");
+      setComparisonTitle("");
+      setOriginalData({ title: "", promptA: "", promptB: "" });
+      setHasUnsavedChanges(false);
     }
   }, [selectedComparison, setCurrentPromptA, setCurrentPromptB]);
+
+  // Detect unsaved changes
+  useEffect(() => {
+    const currentData = {
+      title: comparisonTitle,
+      promptA: currentPromptA,
+      promptB: currentPromptB
+    };
+    
+    const hasChanges = 
+      currentData.title !== originalData.title ||
+      currentData.promptA !== originalData.promptA ||
+      currentData.promptB !== originalData.promptB;
+    
+    setHasUnsavedChanges(hasChanges);
+  }, [comparisonTitle, currentPromptA, currentPromptB, originalData]);
 
   // Save comparison mutation
   const saveComparisonMutation = useMutation({
@@ -78,6 +110,60 @@ export default function PromptComparison() {
       // Don't auto-select the comparison to avoid resetting fields
     },
   });
+
+  // Function to handle navigation with unsaved changes
+  const handleNavigation = useCallback((action: () => void) => {
+    if (hasUnsavedChanges) {
+      const shouldSave = window.confirm(
+        "Você tem alterações não salvas. Deseja salvar antes de continuar?"
+      );
+      
+      if (shouldSave) {
+        if (!comparisonTitle.trim()) {
+          const title = window.prompt("Digite um nome para a comparação:");
+          if (title) {
+            setComparisonTitle(title);
+            // Salvar e depois navegar
+            saveComparisonMutation.mutate(
+              {
+                title,
+                promptA: currentPromptA,
+                promptB: currentPromptB,
+                projectId: selectedProjectId,
+              },
+              {
+                onSuccess: () => {
+                  setHasUnsavedChanges(false);
+                  action();
+                }
+              }
+            );
+          }
+          return; // Não navegar se cancelou o prompt
+        } else {
+          // Tem título, pode salvar
+          saveComparisonMutation.mutate(
+            {
+              title: comparisonTitle,
+              promptA: currentPromptA,
+              promptB: currentPromptB,
+              projectId: selectedProjectId,
+            },
+            {
+              onSuccess: () => {
+                setHasUnsavedChanges(false);
+                action();
+              }
+            }
+          );
+          return;
+        }
+      }
+    }
+    
+    // Navegar sem salvar ou não há mudanças
+    action();
+  }, [hasUnsavedChanges, comparisonTitle, currentPromptA, currentPromptB, selectedProjectId, saveComparisonMutation]);
 
   const clearAll = useCallback(() => {
     setCurrentPromptA("");
@@ -174,9 +260,10 @@ export default function PromptComparison() {
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         selectedProjectId={selectedProjectId}
-        onSelectProject={setSelectedProjectId}
+        onSelectProject={(projectId) => handleNavigation(() => setSelectedProjectId(projectId))}
         selectedComparisonId={selectedComparisonId}
-        onSelectComparison={setSelectedComparisonId}
+        onSelectComparison={(comparisonId) => handleNavigation(() => setSelectedComparisonId(comparisonId))}
+        hasUnsavedChanges={hasUnsavedChanges}
       />
 
       {/* Main Content */}
@@ -213,7 +300,7 @@ export default function PromptComparison() {
                     value={comparisonTitle}
                     onChange={(e) => setComparisonTitle(e.target.value)}
                     placeholder="Nome da comparação"
-                    className="w-48"
+                    className="w-72"
                     data-testid="input-comparison-title"
                   />
                 </div>
@@ -231,10 +318,12 @@ export default function PromptComparison() {
                 <Button 
                   onClick={saveComparison}
                   disabled={saveComparisonMutation.isPending}
+                  variant={hasUnsavedChanges ? "default" : "outline"}
                   data-testid="button-save"
+                  className={hasUnsavedChanges ? "bg-blue-600 hover:bg-blue-700" : ""}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {saveComparisonMutation.isPending ? "Salvando..." : "Salvar"}
+                  {saveComparisonMutation.isPending ? "Salvando..." : hasUnsavedChanges ? "Salvar *" : "Salvar"}
                 </Button>
                 <Button 
                   variant="outline"
@@ -267,6 +356,8 @@ Suporte completo para:
 • Tags XML como <example>content</example>
 • Múltiplas linhas
 • Código e sintaxe"
+              highlightDifferences={highlightDifferences}
+              otherContent={currentPromptB}
             />
             
             <PromptPanel
@@ -285,6 +376,8 @@ Compare facilmente:
 • Variações de conteúdo  
 • Efetividade das instruções
 • Formatação e organização"
+              highlightDifferences={highlightDifferences}
+              otherContent={currentPromptA}
             />
           </div>
 
@@ -293,6 +386,7 @@ Compare facilmente:
               statsA={statsA}
               statsB={statsB}
               similarity={similarity}
+              onHighlightToggle={setHighlightDifferences}
             />
           </div>
         </div>
